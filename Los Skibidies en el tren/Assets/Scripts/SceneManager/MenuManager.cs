@@ -7,8 +7,9 @@ public class MenuManager : MonoBehaviour
 {
     [SerializeField] private string createClient = "LoadServer";
     [SerializeField] private string joinServer = "JoinServer";
-    [SerializeField] private string sceneClient = "Exercise1_Client";
-    [SerializeField] private string sceneServer = "Exercise1_Server";
+    //[SerializeField] private string sceneClient = "Exercise1_Client";
+    //[SerializeField] private string sceneServer = "Exercise1_Server";
+    [SerializeField] private string mainMenu = "Main Menu";
 
     public void CreateClient()
     {
@@ -18,13 +19,17 @@ public class MenuManager : MonoBehaviour
     {
         SceneManager.LoadScene(joinServer);
     }
-    public void SceneClient()
+    //public void SceneClient()
+    //{
+    //    SceneManager.LoadScene(sceneClient);
+    //}
+    //public void SceneServer()
+    //{
+    //    SceneManager.LoadScene(sceneServer);
+    //}
+    public void MainMenu()
     {
-        SceneManager.LoadScene(sceneClient);
-    }
-    public void SceneServer()
-    {
-        SceneManager.LoadScene(sceneServer);
+        SceneManager.LoadScene(mainMenu);
     }
     public void EndGame()
     {
