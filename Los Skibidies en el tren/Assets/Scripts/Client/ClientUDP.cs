@@ -58,7 +58,7 @@ public class ClientUDP : MonoBehaviour
         byte[] data = Encoding.ASCII.GetBytes(initialMessage);
         socket.SendTo(data, data.Length, SocketFlags.None, ipep);
 
-        message_Chat?.SendMessageToChat("Message sent to server.", Message.MessageType.playerMessage);
+        message_Chat?.SendMessageToChat("Skibidy Toilet", Message.MessageType.playerMessage);
 
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
