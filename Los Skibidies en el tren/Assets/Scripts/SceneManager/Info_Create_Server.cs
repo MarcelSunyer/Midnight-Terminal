@@ -5,37 +5,19 @@ using UnityEngine;
 
 public class Info_Creat_Server : MonoBehaviour
 {
-    [SerializeField] private TMP_Text Cs_Name;
-    [SerializeField] private TMP_Text Cs_Server;
-    [SerializeField] private TMP_Text Cs_Ip;
+    private TMP_Text Cs_Name;
+    private TMP_Text Cs_Server;
+    private TMP_Text Cs_Ip;
 
     private void Start()
     {
-        // Verifica y asigna el texto
-        if (PlayerPrefs.HasKey("Name_Player"))
-        {
-            Cs_Name.text = PlayerPrefs.GetString("Name_Player");
-        }
-        else
-        {
-            Cs_Name.text = "No hay texto guardado";
-        }
+        // Buscar y asignar los componentes TMP_Text en la jerarquía
+        Cs_Name = GameObject.Find("Cs_Name").GetComponent<TMP_Text>();
+        Cs_Server = GameObject.Find("Cs_Server").GetComponent<TMP_Text>();
+        Cs_Ip = GameObject.Find("Cs_Ip").GetComponent<TMP_Text>();
 
-        if (PlayerPrefs.HasKey("Server_Name"))
-        {
-            Cs_Server.text = PlayerPrefs.GetString("Server_Name");
-        }
-        else
-        {
-            Cs_Server.text = "No hay texto guardado";
-        }
-        if (PlayerPrefs.HasKey("LocalIPAddress_create_server"))
-        {
-            Cs_Ip.text = PlayerPrefs.GetString("LocalIPAddress_create_server");
-        }
-        else
-        {
-            Cs_Ip.text = "No hay texto guardado";
-        }
+        Cs_Name.text = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
+        Cs_Server.text = PlayerPrefs.HasKey("Server_Name") ? PlayerPrefs.GetString("Server_Name") : "No hay texto guardado";
+        Cs_Ip.text = PlayerPrefs.HasKey("LocalIPAddress_create_server") ? PlayerPrefs.GetString("LocalIPAddress_create_server") : "No hay texto guardado";
     }
 }

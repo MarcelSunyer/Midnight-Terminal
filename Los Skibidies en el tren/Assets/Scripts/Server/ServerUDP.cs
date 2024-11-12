@@ -8,7 +8,6 @@ using System.Collections.Concurrent;
 public class ServerUDP : MonoBehaviour
 {
     Socket socket;
-    public GameObject UItextObj;
     string serverText;
 
     private Message_chat message_Chat;
@@ -21,7 +20,7 @@ public class ServerUDP : MonoBehaviour
 
         if (message_Chat != null)
         {
-            message_Chat.SendMessageToChat("Starting UDP Server...", Message.MessageType.info);
+            message_Chat.SendMessageToChat("Starting server...", Message.MessageType.info);
         }
         else
         {

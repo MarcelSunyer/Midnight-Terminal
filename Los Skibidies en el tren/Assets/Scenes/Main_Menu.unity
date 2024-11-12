@@ -155,6 +155,7 @@ MonoBehaviour:
   joinServer: JoinServer
   sceneClient: Exercise1_Client
   sceneServer: Exercise1_Server
+  mainMenu: Main Menu
 --- !u!4 &434655723
 Transform:
   m_ObjectHideFlags: 0
@@ -529,12 +530,28 @@ PrefabInstance:
       value: Canvas
       objectReference: {fileID: 0}
     - target: {fileID: 7257422311647727543, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7257422311647727543, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7257422311647727543, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 434655722}
     - target: {fileID: 7257422311647727543, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7257422311647727543, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: CreateClient
+      value: JoinClient
+      objectReference: {fileID: 0}
+    - target: {fileID: 7257422311647727543, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: MenuManager, Assembly-CSharp
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
