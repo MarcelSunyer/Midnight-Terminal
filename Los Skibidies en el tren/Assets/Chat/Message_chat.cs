@@ -19,15 +19,15 @@ public class Message_chat : MonoBehaviour
         general_chat.SetActive(false);
     }
 
-    // Update is called once per frame
-    void Update()
+   void Update()
     {
-         if (Input.GetKeyDown(KeyCode.T))
-         {
-            general_chat.SetActive(true);
-         }
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            // Cambia entre activado y desactivado
+            general_chat.SetActive(!general_chat.activeSelf);
+        }
 
-        if (general_chat == true)
+        if (general_chat.activeSelf)
         {
             if (chatbox.text != "")
             {

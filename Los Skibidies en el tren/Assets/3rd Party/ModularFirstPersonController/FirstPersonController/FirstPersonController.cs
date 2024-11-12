@@ -202,14 +202,16 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
-        #region Camera
-
-        if(Input.GetKey(KeyCode.T))
+        if (Input.GetKeyDown(KeyCode.T))
         {
-            cameraCanMove = false;
-            playerCanMove = false;
-            Cursor.lockState = CursorLockMode.None;
+            // Cambia el estado de cameraCanMove y playerCanMove
+            cameraCanMove = !cameraCanMove;
+            playerCanMove = !playerCanMove;
+
+            // Alterna entre bloquear y desbloquear el cursor
+            Cursor.lockState = cameraCanMove ? CursorLockMode.Locked : CursorLockMode.None;
         }
+        #region Camera
 
         // Control camera movement
         if (cameraCanMove)
