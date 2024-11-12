@@ -202,10 +202,19 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            // Cambia el estado de cameraCanMove y playerCanMove
+            cameraCanMove = !cameraCanMove;
+            playerCanMove = !playerCanMove;
+
+            // Alterna entre bloquear y desbloquear el cursor
+            Cursor.lockState = cameraCanMove ? CursorLockMode.Locked : CursorLockMode.None;
+        }
         #region Camera
 
         // Control camera movement
-        if(cameraCanMove)
+        if (cameraCanMove)
         {
             yaw = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * mouseSensitivity;
 
