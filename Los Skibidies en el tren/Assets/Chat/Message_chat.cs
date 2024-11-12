@@ -48,14 +48,6 @@ public class Message_chat : MonoBehaviour
             }
         }
 
-
-        if (!chatbox.isFocused)
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                SendMessageToChat("Sborrada Premium", Message.MessageType.info);
-            }
-        }
     }
 
     public void SendMessageToChat(string text, Message.MessageType messageType)

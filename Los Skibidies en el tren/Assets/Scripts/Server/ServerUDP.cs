@@ -3,23 +3,30 @@ using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
 using System.Threading;
-using TMPro;
+using System.Collections.Concurrent;
 
 public class ServerUDP : MonoBehaviour
 {
     Socket socket;
     public GameObject UItextObj;
-    TextMeshProUGUI UItext;
     string serverText;
+
+    private Message_chat message_Chat;
+    private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>(); // Cola para mensajes
 
     void Start()
     {
-        UItext = UItextObj.GetComponent<TextMeshProUGUI>();
-    }
+        // Obtener referencia al componente Message_chat
+        message_Chat = FindObjectOfType<Message_chat>();
 
-    public void startServer()
-    {
-        serverText = "Starting UDP Server...";
+        if (message_Chat != null)
+        {
+            message_Chat.SendMessageToChat("Starting UDP Server...", Message.MessageType.info);
+        }
+        else
+        {
+            Debug.LogError("No se encontró el componente Message_chat.");
+        }
 
         // Crear y vincular el socket
         IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
@@ -33,7 +40,14 @@ public class ServerUDP : MonoBehaviour
 
     void Update()
     {
-        UItext.text = serverText;
+        // Procesar los mensajes de la cola en el hilo principal
+        while (messageQueue.TryDequeue(out string message))
+        {
+            if (message_Chat != null)
+            {
+                message_Chat.SendMessageToChat(message, Message.MessageType.info);
+            }
+        }
     }
 
     void Receive()
@@ -41,7 +55,10 @@ public class ServerUDP : MonoBehaviour
         int recv;
         byte[] data = new byte[1024];
 
-        serverText += "\nWaiting for new Client...";
+        if (message_Chat != null)
+        {
+            messageQueue.Enqueue("Waiting for new Client...");
+        }
 
         IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
         EndPoint Remote = (EndPoint)sender;
@@ -50,9 +67,12 @@ public class ServerUDP : MonoBehaviour
         {
             // Recibir mensaje
             recv = socket.ReceiveFrom(data, ref Remote);
-            serverText += $"\nMessage received from {Remote.ToString()}: " + Encoding.ASCII.GetString(data, 0, recv);
+            string receivedMessage = $"Message received from {Remote.ToString()}: " + Encoding.ASCII.GetString(data, 0, recv);
 
-            // Enviar ping de respuesta
+            // Agregar el mensaje a la cola
+            messageQueue.Enqueue(receivedMessage);
+
+            // Enviar ping de respuesta en un nuevo hilo
             Thread sendThread = new Thread(() => Send(Remote));
             sendThread.Start();
         }
@@ -65,6 +85,8 @@ public class ServerUDP : MonoBehaviour
 
         // Enviar el mensaje de ping al cliente
         socket.SendTo(data, data.Length, SocketFlags.None, Remote);
-        serverText += $"\nSent to {Remote.ToString()}: {welcome}";
+
+        // Agregar mensaje de envío a la cola
+        messageQueue.Enqueue($"Sent to {Remote.ToString()}: {welcome}");
     }
 }
