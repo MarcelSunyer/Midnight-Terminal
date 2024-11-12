@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,9 @@ public class Message_chat : MonoBehaviour
     public GameObject textObject;
     public InputField chatbox;
 
+    public Color playerMessage;
+    public Color infoMessage;
+
     [SerializeField]
     List<Message> messageList = new List<Message>();
     void Start()
@@ -19,7 +23,7 @@ public class Message_chat : MonoBehaviour
         general_chat.SetActive(false);
     }
 
-   void Update()
+    void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
@@ -27,27 +31,34 @@ public class Message_chat : MonoBehaviour
             general_chat.SetActive(!general_chat.activeSelf);
         }
 
-        if (general_chat.activeSelf)
+
+        if (chatbox.text != "")
         {
-            if (chatbox.text != "")
+            if (Input.GetKeyDown(KeyCode.Return))
             {
-                if (Input.GetKeyDown(KeyCode.Return))
-                {
-                    SendMessageToChat(chatbox.text);
-                    chatbox.text = "";
-                }
+                SendMessageToChat(chatbox.text, Message.MessageType.playerMessage);
+                chatbox.text = "";
             }
-            if (chatbox.isFocused)
+        }
+        else
+        {
+            if (!chatbox.isFocused && Input.GetKeyDown(KeyCode.Return))
             {
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    SendMessageToChat("Sborrada Premium");
-                }
+                chatbox.ActivateInputField();
+            }
+        }
+
+
+        if (!chatbox.isFocused)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                SendMessageToChat("Sborrada Premium", Message.MessageType.info);
             }
         }
     }
 
-    public void SendMessageToChat(string text)
+    public void SendMessageToChat(string text, Message.MessageType messageType)
     {
         if(messageList.Count >= maxMessage)
         {
@@ -64,8 +75,22 @@ public class Message_chat : MonoBehaviour
         newMessage.textObject = newText.GetComponent<Text>();
 
         newMessage.textObject.text = newMessage.text;
+        newMessage.textObject.color = MessageTypeColor(messageType);
 
         messageList.Add(newMessage);
+    }
+    Color MessageTypeColor(Message.MessageType messageType)
+    {
+        Color color = infoMessage;
+
+        switch (messageType)
+        {
+            case Message.MessageType.playerMessage:
+                color = playerMessage;
+                break;
+
+        }
+        return color;
     }
 }
 
@@ -74,4 +99,11 @@ public class Message
 {
     public string text;
     public Text textObject;
+    public MessageType messageType;
+
+    public enum MessageType
+    {
+        playerMessage,
+        info
+    }
 }
