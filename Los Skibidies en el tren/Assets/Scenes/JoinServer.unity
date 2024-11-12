@@ -500,7 +500,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   createClient: LoadServer
   joinServer: JoinServer
+  sceneClient: Game_Scene
+  sceneServer: Game_Scene
   mainMenu: Main_Menu
+  clientPrefab: {fileID: 0}
+  serverPrefab: {fileID: 0}
 --- !u!4 &256650895
 Transform:
   m_ObjectHideFlags: 0

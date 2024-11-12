@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -78,16 +77,16 @@ public class MenuManager : MonoBehaviour
         {
             Debug.Log("Instanciando prefab en Game_Scene");
 
-            if (isClient && clientPrefab != null)
+            if (isClient && serverPrefab != null)
             {
-                Debug.Log("Prefab de cliente asignado: " + clientPrefab.name);
-                Instantiate(clientPrefab);
+                Debug.Log("Prefab de cliente asignado: " + serverPrefab.name);
+                Instantiate(serverPrefab);
                 Debug.Log("Prefab de cliente instanciado.");
             }
-            else if (!isClient && serverPrefab != null)
+            else if (!isClient && clientPrefab != null)
             {
-                Debug.Log("Prefab de servidor asignado: " + serverPrefab.name);
-                Instantiate(serverPrefab);
+                Debug.Log("Prefab de servidor asignado: " + clientPrefab.name);
+                Instantiate(clientPrefab);
                 Debug.Log("Prefab de servidor instanciado.");
             }
             else

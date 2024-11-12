@@ -53,7 +53,7 @@ public class ServerUDP : MonoBehaviour
     {
         int recv;
         byte[] data = new byte[1024];
-
+            
         if (message_Chat != null)
         {
             messageQueue.Enqueue("Waiting for new Client...");
