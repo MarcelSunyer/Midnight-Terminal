@@ -27,8 +27,11 @@ public class ServerUDP : MonoBehaviour
     [SerializeField]
     List<Message> messageList = new List<Message>();
 
+    string player_name;
     void Start()
     {
+
+        player_name = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
         general_chat = GameObject.Find("GeneralChat");
         chatPanel = GameObject.Find("ChatPanel");
         chatbox = GameObject.FindObjectOfType<InputField>();
@@ -65,8 +68,8 @@ public class ServerUDP : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Return) && !string.IsNullOrEmpty(chatbox.text))
         {
             string message = chatbox.text;
-            SendMessageToChat(message, Message.MessageType.playerMessage);
-            BroadcastMessage(message, null); // Difundir mensaje a todos los clientes
+            SendMessageToChat(player_name + ": " + message, Message.MessageType.playerMessage);
+            BroadcastMessage(player_name + ": " + message, null); // Difundir mensaje a todos los clientes
             chatbox.text = ""; // Limpiar el input
         }
     }
@@ -88,7 +91,7 @@ public class ServerUDP : MonoBehaviour
             }
 
             // Añadir mensaje recibido a la cola y difundir a otros clientes
-            messageQueue.Enqueue($"Message from client: {receivedMessage}");
+            messageQueue.Enqueue($"{receivedMessage}");
             BroadcastMessage(receivedMessage, remoteClient);
         }
     }

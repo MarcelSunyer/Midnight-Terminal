@@ -25,9 +25,12 @@ public class ClientUDP : MonoBehaviour
 
     [SerializeField]
     List<Message> messageList = new List<Message>();
-
+    string playerName;
     void Start()
     {
+        //Get UserName
+        playerName = PlayerPrefs.HasKey("Join_Server_Name") ? PlayerPrefs.GetString("Join_Server_Name") : "No hay texto guardado";
+
         general_chat = GameObject.Find("GeneralChat");
         chatPanel = GameObject.Find("ChatPanel");
         chatbox = GameObject.FindObjectOfType<InputField>();
@@ -39,7 +42,7 @@ public class ClientUDP : MonoBehaviour
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
         // Enviar mensaje inicial y empezar a recibir
-        SendMessageToServer("Hello from client");
+        SendMessageToServer(playerName + " has joined to the server");
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
 
@@ -62,8 +65,8 @@ public class ClientUDP : MonoBehaviour
         // Enviar mensaje de chat al presionar Enter y no estar vacío
         if (Input.GetKeyDown(KeyCode.Return) && !string.IsNullOrEmpty(chatbox.text))
         {
-            SendMessageToChat(chatbox.text, Message.MessageType.playerMessage); // Mostrar en chat local
-            SendMessageToServer(chatbox.text); // Enviar al servidor
+            SendMessageToChat(playerName + ": " + chatbox.text, Message.MessageType.playerMessage); // Mostrar en chat local
+            SendMessageToServer(playerName + ": " + chatbox.text); // Enviar al servidor
             chatbox.text = ""; // Limpiar el input
         }
         else if (!chatbox.isFocused && Input.GetKeyDown(KeyCode.Return))
