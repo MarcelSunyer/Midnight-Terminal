@@ -1,80 +1,141 @@
-﻿using System.Net;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Threading;
-using System.Collections.Generic;
 
 public class ClientUDP : MonoBehaviour
 {
     private Socket socket;
-    private Message_chat message_Chat;
-
+    private IPEndPoint serverEndPoint;
     private Queue<System.Action> mainThreadTasks = new Queue<System.Action>(); // Cola para tareas del hilo principal
+
+    public int maxMessage = 25;
+
+    private GameObject general_chat;
+    private GameObject chatPanel;
+    public GameObject textObject;
+    private InputField chatbox;
+
+    public Color playerMessage;
+    public Color infoMessage;
+
+    [SerializeField]
+    List<Message> messageList = new List<Message>();
 
     void Start()
     {
-        message_Chat = FindObjectOfType<Message_chat>();
+        general_chat = GameObject.Find("GeneralChat");
+        chatPanel = GameObject.Find("ChatPanel");
+        chatbox = GameObject.FindObjectOfType<InputField>();
+        // Configurar el endpoint del servidor
+        string serverIP = PlayerPrefs.GetString("Join_Server_IP", "127.0.0.1"); // IP predeterminada
+        serverEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
 
-        if (message_Chat != null)
-        {
-            message_Chat.SendMessageToChat("Client initialized...", Message.MessageType.info);
-        }
-        else
-        {
-            Debug.LogError("No se encontró el componente Message_chat.");
-        }
-        Thread mainThread = new Thread(SendInitialMessage);
-        mainThread.Start();
+        // Crear y configurar el socket del cliente
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+        // Enviar mensaje inicial y empezar a recibir
+        SendMessageToServer("Hello from client");
+        Thread receiveThread = new Thread(Receive);
+        receiveThread.Start();
+
+        // Inicializar el chat
+        general_chat.SetActive(false);
     }
 
     void Update()
     {
-        // Ejecuta las tareas de la cola en el hilo principal
         while (mainThreadTasks.Count > 0)
         {
             mainThreadTasks.Dequeue().Invoke();
         }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            general_chat.SetActive(!general_chat.activeSelf); // Activar/desactivar chat
+        }
+
+        // Enviar mensaje de chat al presionar Enter y no estar vacío
+        if (Input.GetKeyDown(KeyCode.Return) && !string.IsNullOrEmpty(chatbox.text))
+        {
+            SendMessageToChat(chatbox.text, Message.MessageType.playerMessage); // Mostrar en chat local
+            SendMessageToServer(chatbox.text); // Enviar al servidor
+            chatbox.text = ""; // Limpiar el input
+        }
+        else if (!chatbox.isFocused && Input.GetKeyDown(KeyCode.Return))
+        {
+            chatbox.ActivateInputField();
+        }
     }
 
-    void SendInitialMessage()
+    void SendMessageToServer(string message)
     {
-        // Crear el endpoint utilizando la IP guardada en PlayerPrefs
-        string serverIP = null;
-
-        // Agregar la tarea de obtener la IP a la cola para que se ejecute en el hilo principal
-        mainThreadTasks.Enqueue(() =>
-        {
-            serverIP = PlayerPrefs.GetString("Join_Server_IP", "127.0.0.1"); // Default to local IP if no value found
-        });
-
-        // Esperar a que el valor se obtenga
-        while (serverIP == null) { }
-
-        IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-        string initialMessage = "Hello from client";
-        byte[] data = Encoding.ASCII.GetBytes(initialMessage);
-        socket.SendTo(data, data.Length, SocketFlags.None, ipep);
-
-        message_Chat?.SendMessageToChat("Skibidy Toilet", Message.MessageType.playerMessage);
-
-        Thread receiveThread = new Thread(Receive);
-        receiveThread.Start();
+        byte[] data = Encoding.ASCII.GetBytes(message);
+        socket.SendTo(data, serverEndPoint); // Enviar mensaje al servidor
     }
 
     void Receive()
     {
         IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        EndPoint Remote = (EndPoint)sender;
+        EndPoint remoteEndPoint = (EndPoint)sender;
         byte[] data = new byte[1024];
 
         while (true)
         {
-            int recv = socket.ReceiveFrom(data, ref Remote);
-            string receivedText = $"Message from server: " + Encoding.ASCII.GetString(data, 0, recv);
-            message_Chat?.SendMessageToChat(receivedText, Message.MessageType.info);
+            int recv = socket.ReceiveFrom(data, ref remoteEndPoint);
+            string receivedText = Encoding.ASCII.GetString(data, 0, recv);
+            mainThreadTasks.Enqueue(() => SendMessageToChat(receivedText, Message.MessageType.info));
+        }
+    }
+
+    // Métodos del sistema de chat
+    public void SendMessageToChat(string text, Message.MessageType messageType)
+    {
+        if (messageList.Count >= maxMessage)
+        {
+            Destroy(messageList[0].textObject.gameObject);
+            messageList.RemoveAt(0);
+        }
+
+        Message newMessage = new Message();
+        newMessage.text = text;
+
+        GameObject newText = Instantiate(textObject, chatPanel.transform);
+        newMessage.textObject = newText.GetComponent<Text>();
+        newMessage.textObject.text = newMessage.text;
+        newMessage.textObject.color = MessageTypeColor(messageType);
+
+        messageList.Add(newMessage);
+    }
+
+    Color MessageTypeColor(Message.MessageType messageType)
+    {
+        Color color = infoMessage;
+
+        switch (messageType)
+        {
+            case Message.MessageType.playerMessage:
+                color = playerMessage;
+                break;
+        }
+        return color;
+    }
+
+    [System.Serializable]
+    public class Message
+    {
+        public string text;
+        public Text textObject;
+        public MessageType messageType;
+
+        public enum MessageType
+        {
+            playerMessage,
+            info
         }
     }
 }

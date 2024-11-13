@@ -1,91 +1,155 @@
-﻿using System.Net;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Threading;
 using System.Collections.Concurrent;
 
 public class ServerUDP : MonoBehaviour
 {
-    Socket socket;
-    string serverText;
-
-    private Message_chat message_Chat;
+    private Socket socket;
     private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>(); // Cola para mensajes
+    private List<EndPoint> connectedClients = new List<EndPoint>(); // Lista para clientes conectados
+
+    public int maxMessage = 25;
+
+    private GameObject general_chat;
+    private GameObject chatPanel;
+    public GameObject textObject;
+    private InputField chatbox;
+
+    public Color playerMessage;
+    public Color infoMessage;
+
+    [SerializeField]
+    List<Message> messageList = new List<Message>();
 
     void Start()
     {
-        // Obtener referencia al componente Message_chat
-        message_Chat = FindObjectOfType<Message_chat>();
+        general_chat = GameObject.Find("GeneralChat");
+        chatPanel = GameObject.Find("ChatPanel");
+        chatbox = GameObject.FindObjectOfType<InputField>();
 
-        if (message_Chat != null)
-        {
-            message_Chat.SendMessageToChat("Starting server...", Message.MessageType.info);
-        }
-        else
-        {
-            Debug.LogError("No se encontró el componente Message_chat.");
-        }
+        // Inicializar el componente de chat
+        general_chat.SetActive(false);
 
-        // Crear y vincular el socket
+        // Configurar el socket del servidor
         IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         socket.Bind(ipep);
 
         // Iniciar el hilo para recibir mensajes
-        Thread newConnection = new Thread(Receive);
-        newConnection.Start();
+        Thread receiveThread = new Thread(Receive);
+        receiveThread.Start();
+
+        // Mostrar mensaje inicial en el chat
+        SendMessageToChat("Starting server...", Message.MessageType.info);
     }
 
     void Update()
     {
-        // Procesar los mensajes de la cola en el hilo principal
         while (messageQueue.TryDequeue(out string message))
         {
-            if (message_Chat != null)
-            {
-                message_Chat.SendMessageToChat(message, Message.MessageType.info);
-            }
+            SendMessageToChat(message, Message.MessageType.info);
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            general_chat.SetActive(!general_chat.activeSelf); // Activar/desactivar chat
+        }
+
+        // Enviar mensaje de chat desde el servidor
+        if (Input.GetKeyDown(KeyCode.Return) && !string.IsNullOrEmpty(chatbox.text))
+        {
+            string message = chatbox.text;
+            SendMessageToChat(message, Message.MessageType.playerMessage);
+            BroadcastMessage(message, null); // Difundir mensaje a todos los clientes
+            chatbox.text = ""; // Limpiar el input
         }
     }
 
     void Receive()
     {
-        int recv;
         byte[] data = new byte[1024];
-            
-        if (message_Chat != null)
-        {
-            messageQueue.Enqueue("Waiting for new Client...");
-        }
-
-        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        EndPoint Remote = (EndPoint)sender;
+        EndPoint remoteClient = new IPEndPoint(IPAddress.Any, 0);
 
         while (true)
         {
-            // Recibir mensaje
-            recv = socket.ReceiveFrom(data, ref Remote);
-            string receivedMessage = $"Message received from {Remote.ToString()}: " + Encoding.ASCII.GetString(data, 0, recv);
+            int recv = socket.ReceiveFrom(data, ref remoteClient);
+            string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
-            // Agregar el mensaje a la cola
-            messageQueue.Enqueue(receivedMessage);
+            // Registrar nuevo cliente
+            if (!connectedClients.Contains(remoteClient))
+            {
+                connectedClients.Add(remoteClient);
+            }
 
-            // Enviar ping de respuesta en un nuevo hilo
-            Thread sendThread = new Thread(() => Send(Remote));
-            sendThread.Start();
+            // Añadir mensaje recibido a la cola y difundir a otros clientes
+            messageQueue.Enqueue($"Message from client: {receivedMessage}");
+            BroadcastMessage(receivedMessage, remoteClient);
         }
     }
 
-    void Send(EndPoint Remote)
+    void BroadcastMessage(string message, EndPoint sender)
     {
-        string welcome = "Ping";
-        byte[] data = Encoding.ASCII.GetBytes(welcome);
+        byte[] data = Encoding.ASCII.GetBytes(message);
 
-        // Enviar el mensaje de ping al cliente
-        socket.SendTo(data, data.Length, SocketFlags.None, Remote);
+        foreach (var client in connectedClients)
+        {
+            if (sender == null || !client.Equals(sender)) // No reenviar al remitente si hay uno
+            {
+                socket.SendTo(data, client);
+            }
+        }
+    }
 
-        // Agregar mensaje de envío a la cola
-        messageQueue.Enqueue($"Sent to {Remote.ToString()}: {welcome}");
+    // Métodos del sistema de chat
+    public void SendMessageToChat(string text, Message.MessageType messageType)
+    {
+        if (messageList.Count >= maxMessage)
+        {
+            Destroy(messageList[0].textObject.gameObject);
+            messageList.RemoveAt(0);
+        }
+
+        Message newMessage = new Message();
+        newMessage.text = text;
+
+        GameObject newText = Instantiate(textObject, chatPanel.transform);
+        newMessage.textObject = newText.GetComponent<Text>();
+        newMessage.textObject.text = newMessage.text;
+        newMessage.textObject.color = MessageTypeColor(messageType);
+
+        messageList.Add(newMessage);
+    }
+
+    Color MessageTypeColor(Message.MessageType messageType)
+    {
+        Color color = infoMessage;
+
+        switch (messageType)
+        {
+            case Message.MessageType.playerMessage:
+                color = playerMessage;
+                break;
+        }
+        return color;
+    }
+
+    [System.Serializable]
+    public class Message
+    {
+        public string text;
+        public Text textObject;
+        public MessageType messageType;
+
+        public enum MessageType
+        {
+            playerMessage,
+            info
+        }
     }
 }

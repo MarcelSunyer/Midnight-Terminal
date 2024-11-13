@@ -224,6 +224,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ded76a535ab860498072928ea7a5925, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxMessage: 25
+  textObject: {fileID: 5657110658151976098, guid: d0d93ba47aaf33d41ac7959e86bbeac9, type: 3}
+  playerMessage: {r: 0.735849, g: 0.31585974, b: 0.31585974, a: 1}
+  infoMessage: {r: 0.8392205, g: 1, b: 0, a: 1}
+  messageList: []
 --- !u!1 &6151871237968885878
 GameObject:
   m_ObjectHideFlags: 0
