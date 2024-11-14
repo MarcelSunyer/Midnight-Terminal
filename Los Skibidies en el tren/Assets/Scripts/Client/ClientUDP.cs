@@ -35,7 +35,7 @@ public class ClientUDP : MonoBehaviour
         chatPanel = GameObject.Find("ChatPanel");
         chatbox = GameObject.FindObjectOfType<InputField>();
         // Configurar el endpoint del servidor
-        string serverIP = PlayerPrefs.GetString("Join_Server_IP", "127.0.0.1"); // IP predeterminada
+        string serverIP = PlayerPrefs.GetString("Join_Server_IP", "0.0.0.0"); // IP predeterminada
         serverEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
 
         // Crear y configurar el socket del cliente
