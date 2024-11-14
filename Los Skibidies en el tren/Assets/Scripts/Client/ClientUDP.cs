@@ -34,6 +34,7 @@ public class ClientUDP : MonoBehaviour
         general_chat = GameObject.Find("GeneralChat");
         chatPanel = GameObject.Find("ChatPanel");
         chatbox = GameObject.FindObjectOfType<InputField>();
+        general_chat.SetActive(false);
         // Configurar el endpoint del servidor
         string serverIP = PlayerPrefs.GetString("Join_Server_IP", "0.0.0.0"); // IP predeterminada
         serverEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
@@ -46,8 +47,6 @@ public class ClientUDP : MonoBehaviour
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
 
-        // Inicializar el chat
-        general_chat.SetActive(false);
     }
 
     void Update()
