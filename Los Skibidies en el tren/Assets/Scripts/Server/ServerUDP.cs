@@ -121,6 +121,7 @@ public class ServerUDP : MonoBehaviour
         if (serverObject != null && clientPlayerInstance == null)
         {
             clientPlayerInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
+            Debug.Log("Client Added: " + clientPlayerInstance.name);
         }
     }
 
@@ -137,8 +138,10 @@ public class ServerUDP : MonoBehaviour
         if (serverObject == null) return;
 
         Position serverPosition = new Position(serverObject.transform.position.x, serverObject.transform.position.y, serverObject.transform.position.z);
+        Debug.Log("DEBUG - ClientPlayerInstance Position: " + clientPlayerInstance.transform.position.x + " " + clientPlayerInstance.transform.position.y + " " + clientPlayerInstance.transform.position.z);
         BroadcastPosition(serverPosition, null);
     }
+
 
     void BroadcastPosition(Position position, EndPoint sender)
     {
@@ -149,7 +152,10 @@ public class ServerUDP : MonoBehaviour
         {
             if (sender == null || !client.Equals(sender))
             {
+                Debug.Log("DEBUG - Position send: " + position.x + " " + position.y + " " + position.z);
+                //SendMessageToChat("DEBUG - Position send: " + position.x + " " + position.y + " " + position.z, Message.MessageType.info);
                 socket.SendTo(data, client);
+
             }
         }
     }

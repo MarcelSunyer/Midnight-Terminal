@@ -1515,8 +1515,8 @@ MonoBehaviour:
   sceneClient: Game_Scene
   sceneServer: Game_Scene
   mainMenu: Main_Menu
-  clientPrefab: {fileID: 0}
-  serverPrefab: {fileID: 0}
+  clientPrefab: {fileID: 6687710308108566579, guid: 6f25c661a9bace746b4d9b357e61eed2, type: 3}
+  serverPrefab: {fileID: 6687710308108566579, guid: e7dd4f3ebed0f2248968a74617652c89, type: 3}
 --- !u!4 &1418819870
 Transform:
   m_ObjectHideFlags: 0
