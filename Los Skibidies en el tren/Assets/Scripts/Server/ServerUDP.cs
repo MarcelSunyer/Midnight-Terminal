@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,11 +10,11 @@ using System.Collections.Concurrent;
 public class ServerUDP : MonoBehaviour
 {
     private Socket socket;
-    private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>(); // Cola para mensajes
-    private List<EndPoint> connectedClients = new List<EndPoint>(); // Lista para clientes conectados
+    private ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
+    private List<EndPoint> connectedClients = new List<EndPoint>();
+    private Dictionary<EndPoint, Position> clientPositions = new Dictionary<EndPoint, Position>();
 
     public int maxMessage = 25;
-
     private GameObject general_chat;
     private GameObject chatPanel;
     public GameObject textObject;
@@ -28,27 +27,26 @@ public class ServerUDP : MonoBehaviour
     List<Message> messageList = new List<Message>();
 
     string player_name;
+
+    public GameObject serverObject;
+    private GameObject clientPlayer;
+
     void Start()
     {
-
         player_name = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
         general_chat = GameObject.Find("GeneralChat");
         chatPanel = GameObject.Find("ChatPanel");
         chatbox = GameObject.FindObjectOfType<InputField>();
 
-        // Inicializar el componente de chat
         general_chat.SetActive(false);
 
-        // Configurar el socket del servidor
         IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         socket.Bind(ipep);
 
-        // Iniciar el hilo para recibir mensajes
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
 
-        // Mostrar mensaje inicial en el chat
         SendMessageToChat("Starting server...", Message.MessageType.info);
     }
 
@@ -61,17 +59,18 @@ public class ServerUDP : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.T))
         {
-            general_chat.SetActive(!general_chat.activeSelf); // Activar/desactivar chat
+            general_chat.SetActive(!general_chat.activeSelf);
         }
 
-        // Enviar mensaje de chat desde el servidor
         if (Input.GetKeyDown(KeyCode.Return) && !string.IsNullOrEmpty(chatbox.text))
         {
             string message = chatbox.text;
             SendMessageToChat(player_name + ": " + message, Message.MessageType.playerMessage);
-            BroadcastMessage(player_name + ": " + message, null); // Difundir mensaje a todos los clientes
-            chatbox.text = ""; // Limpiar el input
+            BroadcastMessage(player_name + ": " + message, null);
+            chatbox.text = "";
         }
+
+        BroadcastServerPosition();
     }
 
     void Receive()
@@ -84,15 +83,59 @@ public class ServerUDP : MonoBehaviour
             int recv = socket.ReceiveFrom(data, ref remoteClient);
             string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
-            // Registrar nuevo cliente
             if (!connectedClients.Contains(remoteClient))
             {
                 connectedClients.Add(remoteClient);
+                AddClient();
             }
 
-            // Añadir mensaje recibido a la cola y difundir a otros clientes
-            messageQueue.Enqueue($"{receivedMessage}");
-            BroadcastMessage(receivedMessage, remoteClient);
+            Position positionData;
+            try
+            {
+                positionData = Position.Deserialize(receivedMessage);
+                clientPositions[remoteClient] = positionData;
+                BroadcastPosition(positionData, remoteClient);
+            }
+            catch
+            {
+                messageQueue.Enqueue($"{receivedMessage}");
+                BroadcastMessage(receivedMessage, remoteClient);
+            }
+        }
+    }
+
+    void AddClient()
+    {
+
+        if (serverObject != null)
+        {
+            clientPlayer = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
+            SendMessageToChat("DEBUG: ---AddClient---", Message.MessageType.info);
+            SendMessageToChat("DEBUG: clientPlayer: " + clientPlayer.transform.position.ToString(), Message.MessageType.info);
+        }
+    }
+
+    void BroadcastServerPosition()
+    {
+        if (serverObject == null) return;
+
+        // Envía la posición del objeto `serverObject` a todos los clientes
+        Position serverPosition = new Position(serverObject.transform.position.x, serverObject.transform.position.y, serverObject.transform.position.z);
+        BroadcastPosition(serverPosition, null);
+    }
+
+    void BroadcastPosition(Position position, EndPoint sender)
+    {
+        string serializedPosition = Position.Serialize(position);
+        byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
+
+        foreach (var client in connectedClients)
+        {
+            if (sender == null || !client.Equals(sender))
+            {
+                socket.SendTo(data, client);
+                //if(position != null) SendMessageToChat("DEBUG: Position: " + position.x + " " + position.y + " " + position.z, Message.MessageType.info);
+            }
         }
     }
 
@@ -102,14 +145,13 @@ public class ServerUDP : MonoBehaviour
 
         foreach (var client in connectedClients)
         {
-            if (sender == null || !client.Equals(sender)) // No reenviar al remitente si hay uno
+            if (sender == null || !client.Equals(sender))
             {
                 socket.SendTo(data, client);
             }
         }
     }
 
-    // Métodos del sistema de chat
     public void SendMessageToChat(string text, Message.MessageType messageType)
     {
         if (messageList.Count >= maxMessage)
