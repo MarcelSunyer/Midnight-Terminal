@@ -25,8 +25,8 @@ public class ClientUDP : MonoBehaviour
     List<Message> messageList = new List<Message>();
     string playerName;
 
-    // Almacena la posición del servidor o de otros clientes
-    private Vector3 serverPosition;
+    public GameObject serverRepresentationPrefab; // Prefab que representa al servidor
+    private GameObject serverInstance; // Instancia creada para visualizar el servidor
 
     void Start()
     {
@@ -35,11 +35,18 @@ public class ClientUDP : MonoBehaviour
         chatPanel = GameObject.Find("ChatPanel");
         chatbox = GameObject.FindObjectOfType<InputField>();
         general_chat.SetActive(false);
+
         string serverIP = PlayerPrefs.GetString("Join_Server_IP", "0.0.0.0");
         serverEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
 
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         SendMessageToServer(playerName + " has joined the server");
+
+        // Crear la instancia de serverRepresentationPrefab si no existe
+        if (serverRepresentationPrefab != null && serverInstance == null)
+        {
+            serverInstance = Instantiate(serverRepresentationPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        }
 
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
@@ -68,16 +75,31 @@ public class ClientUDP : MonoBehaviour
             chatbox.ActivateInputField();
         }
 
-        // Enviar posición del cliente al servidor
-        SendPlayerPosition();
+        if (Input.GetMouseButtonDown(0))
+        {
+            SendClickPosition();
+        }
+        else
+        {
+            SendPlayerPosition();
+        }
     }
 
     void SendPlayerPosition()
     {
         Vector3 playerPosition = transform.position;
         Position positionData = new Position(playerPosition.x, playerPosition.y, playerPosition.z);
-        string serializedPosition = Position.Serialize(positionData);
+        string serializedPosition = "POS:" + Position.Serialize(positionData);
         SendMessageToServer(serializedPosition);
+    }
+
+    void SendClickPosition()
+    {
+        Vector3 clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        clickPosition.z = 0;
+        Position positionData = new Position(clickPosition.x, clickPosition.y, clickPosition.z);
+        string serializedClick = "CLICK:" + Position.Serialize(positionData);
+        SendMessageToServer(serializedClick);
     }
 
     void SendMessageToServer(string message)
@@ -112,8 +134,11 @@ public class ClientUDP : MonoBehaviour
 
     void UpdateServerPosition(Position pos)
     {
-        serverPosition = new Vector3(pos.x, pos.y, pos.z);
-        // Actualiza en la escena la posición del servidor u otros jugadores aquí
+        // Asegurarse de que la instancia del servidor existe antes de actualizar su posición
+        if (serverInstance != null)
+        {
+            serverInstance.transform.position = new Vector3(pos.x, pos.y, pos.z);
+        }
     }
 
     public void SendMessageToChat(string text, Message.MessageType messageType)

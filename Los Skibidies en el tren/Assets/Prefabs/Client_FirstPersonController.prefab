@@ -228,8 +228,8 @@ MonoBehaviour:
   textObject: {fileID: 5657110658151976098, guid: d0d93ba47aaf33d41ac7959e86bbeac9, type: 3}
   playerMessage: {r: 0.735849, g: 0.31585974, b: 0.31585974, a: 1}
   infoMessage: {r: 0.8392205, g: 1, b: 0, a: 1}
-  playerObject: {fileID: 7093247764248615916, guid: ce09b5c54267d7b4297776de9a97419d, type: 3}
   messageList: []
+  serverRepresentationPrefab: {fileID: 7093247764248615916, guid: ce09b5c54267d7b4297776de9a97419d, type: 3}
 --- !u!1 &6151871237968885878
 GameObject:
   m_ObjectHideFlags: 0
