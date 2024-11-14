@@ -46,4 +46,10 @@ public class Local_Ip_join_server: MonoBehaviour
 
         return localIP;
     }
+
+    void CopyLocalIP()
+    {
+        string copyIP = GetLocalIPAddress();
+        ipText.text = copyIP;
+    }
 }
