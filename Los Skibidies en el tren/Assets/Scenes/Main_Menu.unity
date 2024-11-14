@@ -443,6 +443,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: JoinServer
       objectReference: {fileID: 0}
+    - target: {fileID: 1125446634616122078, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
+      propertyPath: m_text
+      value: Midnight Terminal Chu Chu
+      objectReference: {fileID: 0}
     - target: {fileID: 2287372735491187858, guid: 829279b4a8f4def4fb4359e48a7f643d, type: 3}
       propertyPath: m_Pivot.x
       value: 0
