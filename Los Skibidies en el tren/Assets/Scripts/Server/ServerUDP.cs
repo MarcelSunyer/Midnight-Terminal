@@ -27,9 +27,8 @@ public class ServerUDP : MonoBehaviour
     List<Message> messageList = new List<Message>();
 
     string player_name;
-
     public GameObject serverObject;
-    private GameObject clientPlayerInstance;
+    private Dictionary<EndPoint, GameObject> clientPlayerInstances = new Dictionary<EndPoint, GameObject>();
 
     void Start()
     {
@@ -94,14 +93,13 @@ public class ServerUDP : MonoBehaviour
                 string positionDataStr = receivedMessage.Substring(4);
                 Position positionData = Position.Deserialize(positionDataStr);
                 clientPositions[remoteClient] = positionData;
-                UpdateClientPlayerPosition(positionData);
+
+                if (clientPlayerInstances.ContainsKey(remoteClient))
+                {
+                    clientPlayerInstances[remoteClient].transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
+                }
+
                 BroadcastPosition(positionData, remoteClient);
-            }
-            else if (receivedMessage.StartsWith("CLICK:"))
-            {
-                string clickDataStr = receivedMessage.Substring(6);
-                Position clickPosition = Position.Deserialize(clickDataStr);
-                HandleClickPosition(remoteClient, clickPosition);
             }
             else
             {
@@ -111,51 +109,40 @@ public class ServerUDP : MonoBehaviour
         }
     }
 
-    void HandleClickPosition(EndPoint client, Position clickPosition)
-    {
-        Debug.Log($"Clic recibido de {client}: Posición {clickPosition.x}, {clickPosition.y}, {clickPosition.z}");
-    }
-
     void AddClient(EndPoint clientEndpoint)
     {
-        if (serverObject != null && clientPlayerInstance == null)
+        if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
         {
-            clientPlayerInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
-            Debug.Log("Client Added: " + clientPlayerInstance.name);
-        }
-    }
-
-    void UpdateClientPlayerPosition(Position positionData)
-    {
-        if (clientPlayerInstance != null)
-        {
-            clientPlayerInstance.transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
+            var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
+            clientPlayerInstances[clientEndpoint] = newClientInstance;
+            Debug.Log("Client Added: " + newClientInstance.name);
         }
     }
 
     void BroadcastServerPosition()
     {
-        if (serverObject == null) return;
+        if (serverObject == null)
+        {
+            Debug.LogWarning("Server object is null; cannot broadcast position.");
+            return;
+        }
 
         Position serverPosition = new Position(serverObject.transform.position.x, serverObject.transform.position.y, serverObject.transform.position.z);
-        //Debug.Log("DEBUG - ClientPlayerInstance Position: " + clientPlayerInstance.transform.position.x + " " + clientPlayerInstance.transform.position.y + " " + clientPlayerInstance.transform.position.z);
+        Debug.Log($"Broadcasting server position: {serverPosition.x}, {serverPosition.y}, {serverPosition.z}");
         BroadcastPosition(serverPosition, null);
     }
 
 
     void BroadcastPosition(Position position, EndPoint sender)
     {
-        string serializedPosition = Position.Serialize(position);
+        string serializedPosition = "POS:" + Position.Serialize(position);
         byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
 
         foreach (var client in connectedClients)
         {
             if (sender == null || !client.Equals(sender))
             {
-                Debug.Log("DEBUG - Position send: " + position.x + " " + position.y + " " + position.z);
-                //SendMessageToChat("DEBUG - Position send: " + position.x + " " + position.y + " " + position.z, Message.MessageType.info);
                 socket.SendTo(data, client);
-
             }
         }
     }
@@ -181,9 +168,7 @@ public class ServerUDP : MonoBehaviour
             messageList.RemoveAt(0);
         }
 
-        Message newMessage = new Message();
-        newMessage.text = text;
-
+        Message newMessage = new Message { text = text };
         GameObject newText = Instantiate(textObject, chatPanel.transform);
         newMessage.textObject = newText.GetComponent<Text>();
         newMessage.textObject.text = newMessage.text;
@@ -194,15 +179,7 @@ public class ServerUDP : MonoBehaviour
 
     Color MessageTypeColor(Message.MessageType messageType)
     {
-        Color color = infoMessage;
-
-        switch (messageType)
-        {
-            case Message.MessageType.playerMessage:
-                color = playerMessage;
-                break;
-        }
-        return color;
+        return messageType == Message.MessageType.playerMessage ? playerMessage : infoMessage;
     }
 
     [System.Serializable]

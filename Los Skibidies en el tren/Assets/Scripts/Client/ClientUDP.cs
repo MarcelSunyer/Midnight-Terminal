@@ -25,8 +25,8 @@ public class ClientUDP : MonoBehaviour
     List<Message> messageList = new List<Message>();
     string playerName;
 
-    public GameObject serverRepresentationPrefab; // Prefab que representa al servidor
-    private GameObject serverInstance; // Instancia creada para visualizar el servidor
+    public GameObject serverRepresentationPrefab;
+    private GameObject serverInstance;
 
     void Start()
     {
@@ -42,7 +42,6 @@ public class ClientUDP : MonoBehaviour
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         SendMessageToServer(playerName + " has joined the server");
 
-        // Crear la instancia de serverRepresentationPrefab si no existe
         if (serverRepresentationPrefab != null && serverInstance == null)
         {
             serverInstance = Instantiate(serverRepresentationPrefab, new Vector3(0, 0, 0), Quaternion.identity);
@@ -98,47 +97,58 @@ public class ClientUDP : MonoBehaviour
         Vector3 clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         clickPosition.z = 0;
         Position positionData = new Position(clickPosition.x, clickPosition.y, clickPosition.z);
-        string serializedClick = "CLICK:" + Position.Serialize(positionData);
-        SendMessageToServer(serializedClick);
+        string serializedPosition = "POS:" + Position.Serialize(positionData);
+        SendMessageToServer(serializedPosition);
     }
+
+    void Receive()
+    {
+        byte[] data = new byte[1024];
+        EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+
+        while (true)
+        {
+            int recv = socket.ReceiveFrom(data, ref remoteEndPoint);
+            string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
+
+            if (receivedMessage.StartsWith("POS:"))
+            {
+                string positionDataStr = receivedMessage.Substring(4);
+                Position positionData = Position.Deserialize(positionDataStr);
+
+                mainThreadTasks.Enqueue(() =>
+                {
+                    UpdateServerPosition(positionData);
+                });
+            }
+            else
+            {
+                mainThreadTasks.Enqueue(() =>
+                {
+                    SendMessageToChat(receivedMessage, Message.MessageType.info);
+                });
+            }
+        }
+    }
+
+    void UpdateServerPosition(Position position)
+    {
+        if (serverInstance != null)
+        {
+            Debug.Log($"Updating server position to: {position.x}, {position.y}, {position.z}");
+            serverInstance.transform.position = new Vector3(position.x, position.y, position.z);
+        }
+        else
+        {
+            Debug.LogWarning("Server instance is null; cannot update position.");
+        }
+    }
+
 
     void SendMessageToServer(string message)
     {
         byte[] data = Encoding.ASCII.GetBytes(message);
         socket.SendTo(data, serverEndPoint);
-    }
-
-    void Receive()
-    {
-        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        EndPoint remoteEndPoint = (EndPoint)sender;
-        byte[] data = new byte[1024];
-
-        while (true)
-        {
-            int recv = socket.ReceiveFrom(data, ref remoteEndPoint);
-            string receivedText = Encoding.ASCII.GetString(data, 0, recv);
-
-            Position positionData;
-            try
-            {
-                positionData = Position.Deserialize(receivedText);
-                mainThreadTasks.Enqueue(() => UpdateServerPosition(positionData));
-            }
-            catch
-            {
-                mainThreadTasks.Enqueue(() => SendMessageToChat(receivedText, Message.MessageType.info));
-            }
-        }
-    }
-
-    void UpdateServerPosition(Position pos)
-    {
-        // Asegurarse de que la instancia del servidor existe antes de actualizar su posición
-        if (serverInstance != null)
-        {
-            serverInstance.transform.position = new Vector3(pos.x, pos.y, pos.z);
-        }
     }
 
     public void SendMessageToChat(string text, Message.MessageType messageType)
@@ -149,9 +159,7 @@ public class ClientUDP : MonoBehaviour
             messageList.RemoveAt(0);
         }
 
-        Message newMessage = new Message();
-        newMessage.text = text;
-
+        Message newMessage = new Message { text = text };
         GameObject newText = Instantiate(textObject, chatPanel.transform);
         newMessage.textObject = newText.GetComponent<Text>();
         newMessage.textObject.text = newMessage.text;
@@ -162,14 +170,7 @@ public class ClientUDP : MonoBehaviour
 
     Color MessageTypeColor(Message.MessageType messageType)
     {
-        Color color = infoMessage;
-        switch (messageType)
-        {
-            case Message.MessageType.playerMessage:
-                color = playerMessage;
-                break;
-        }
-        return color;
+        return messageType == Message.MessageType.playerMessage ? playerMessage : infoMessage;
     }
 
     [System.Serializable]
