@@ -47,7 +47,7 @@ public class Join_server_info : MonoBehaviour
         }
         catch (System.Exception ex)
         {
-           //Degub.Log("Error");
+           
         }
 
         return localIP;

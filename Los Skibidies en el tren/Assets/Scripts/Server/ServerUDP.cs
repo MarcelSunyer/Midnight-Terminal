@@ -138,7 +138,7 @@ public class ServerUDP : MonoBehaviour
         if (serverObject == null) return;
 
         Position serverPosition = new Position(serverObject.transform.position.x, serverObject.transform.position.y, serverObject.transform.position.z);
-        Debug.Log("DEBUG - ClientPlayerInstance Position: " + clientPlayerInstance.transform.position.x + " " + clientPlayerInstance.transform.position.y + " " + clientPlayerInstance.transform.position.z);
+        //Debug.Log("DEBUG - ClientPlayerInstance Position: " + clientPlayerInstance.transform.position.x + " " + clientPlayerInstance.transform.position.y + " " + clientPlayerInstance.transform.position.z);
         BroadcastPosition(serverPosition, null);
     }
 

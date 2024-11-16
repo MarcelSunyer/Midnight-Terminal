@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    [SerializeField] private string createClient = "LoadServer";
+    [SerializeField] private string createServer = "LoadServer";
     [SerializeField] private string joinServer = "JoinServer";
     [SerializeField] private string sceneClient = "Game_Scene";
     [SerializeField] private string sceneServer = "Game_Scene";
@@ -14,16 +14,15 @@ public class MenuManager : MonoBehaviour
     // Prefabs para cliente y servidor
     [SerializeField] private GameObject clientPrefab;
     [SerializeField] private GameObject serverPrefab;
-    
-    bool isClient = false;
+
+    bool isClient;
 
     private void Awake()
     {
         Debug.Log("---------------- Suscribirse al evento de cambio de escena ----------------");
-        DontDestroyOnLoad(gameObject);  // Mantener el objeto entre escenas
         SceneManager.sceneLoaded += OnSceneLoaded;
-        Debug.Log("Prefab de cliente inicial asignado: " + (clientPrefab != null ? clientPrefab.name : "null"));
-        Debug.Log("Prefab de servidor inicial asignado: " + (serverPrefab != null ? serverPrefab.name : "null"));
+        //Debug.Log("Prefab de cliente inicial asignado: " + (clientPrefab != null ? clientPrefab.name : "null"));
+        //Debug.Log("Prefab de servidor inicial asignado: " + (serverPrefab != null ? serverPrefab.name : "null"));
     }
 
     private void OnDestroy()
@@ -33,21 +32,22 @@ public class MenuManager : MonoBehaviour
     }
 
     public void JoinClient()
-    {
-        isClient = true; // Marcar como cliente
-        SceneManager.LoadScene(createClient);
+    {        
+        Debug.Log("JoinClient -> isClient:" + isClient);
+        SceneManager.LoadScene(joinServer);
     }
 
-    public void JoinServer()
+    public void CreateServer()
     {
-        isClient = false; // Marcar como servidor
-        SceneManager.LoadScene(joinServer);
+        Debug.Log("JoinServer -> isClient:" + isClient);
+        SceneManager.LoadScene(createServer);
     }
 
     public void SceneClient()
     {
         isClient = true;
         Debug.Log("Cambiando a escena de cliente: " + sceneClient);
+        Debug.Log("SceneClient -> isClient:" + isClient);
         SceneManager.LoadScene(sceneClient);
     }
 
@@ -55,6 +55,7 @@ public class MenuManager : MonoBehaviour
     {
         isClient = false;
         Debug.Log("Cambiando a escena de servidor: " + sceneServer);
+        Debug.Log("SceneServer -> isClient:" + isClient);
         SceneManager.LoadScene(sceneServer);
     }
 
@@ -79,15 +80,17 @@ public class MenuManager : MonoBehaviour
 
             if (isClient && serverPrefab != null)
             {
-                Debug.Log("Prefab de cliente asignado: " + serverPrefab.name);
-                Instantiate(serverPrefab);
+                Debug.Log("Prefab de cliente asignado: " + clientPrefab.name);
+                Instantiate(clientPrefab);
                 Debug.Log("Prefab de cliente instanciado.");
+                isClient = false;
             }
             else if (!isClient && clientPrefab != null)
             {
-                Debug.Log("Prefab de servidor asignado: " + clientPrefab.name);
-                Instantiate(clientPrefab);
+                Debug.Log("Prefab de servidor asignado: " + serverPrefab.name);
+                Instantiate(serverPrefab);
                 Debug.Log("Prefab de servidor instanciado.");
+                isClient = false;
             }
             else
             {
