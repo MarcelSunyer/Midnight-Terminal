@@ -74,29 +74,13 @@ public class ClientUDP : MonoBehaviour
             chatbox.ActivateInputField();
         }
 
-        if (Input.GetMouseButtonDown(0))
-        {
-            SendClickPosition();
-        }
-        else
-        {
-            SendPlayerPosition();
-        }
+        SendPlayerPosition();
     }
 
     void SendPlayerPosition()
     {
         Vector3 playerPosition = transform.position;
         Position positionData = new Position(playerPosition.x, playerPosition.y, playerPosition.z);
-        string serializedPosition = "POS:" + Position.Serialize(positionData);
-        SendMessageToServer(serializedPosition);
-    }
-
-    void SendClickPosition()
-    {
-        Vector3 clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        clickPosition.z = 0;
-        Position positionData = new Position(clickPosition.x, clickPosition.y, clickPosition.z);
         string serializedPosition = "POS:" + Position.Serialize(positionData);
         SendMessageToServer(serializedPosition);
     }
