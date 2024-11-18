@@ -27,8 +27,15 @@ public class ServerUDP : MonoBehaviour
     List<Message> messageList = new List<Message>();
 
     string player_name;
+
+    // GameObject usado para crear instancias de clientes conectados
     public GameObject serverObject;
+
+    // GameObject dinámico para transmitir la posición del servidor
+    public GameObject dynamicServerObject;
+
     private Dictionary<EndPoint, GameObject> clientPlayerInstances = new Dictionary<EndPoint, GameObject>();
+    private Queue<System.Action> mainThreadActions = new Queue<System.Action>(); 
 
     void Start()
     {
@@ -51,6 +58,13 @@ public class ServerUDP : MonoBehaviour
 
     void Update()
     {
+        // Procesa todas las acciones encoladas para el hilo principal
+        while (mainThreadActions.Count > 0)
+        {
+            mainThreadActions.Dequeue()?.Invoke();
+        }
+
+        // Lógica existente...
         while (messageQueue.TryDequeue(out string message))
         {
             SendMessageToChat(message, Message.MessageType.info);
@@ -72,6 +86,8 @@ public class ServerUDP : MonoBehaviour
         BroadcastServerPosition();
     }
 
+
+
     void Receive()
     {
         byte[] data = new byte[1024];
@@ -85,53 +101,66 @@ public class ServerUDP : MonoBehaviour
             if (!connectedClients.Contains(remoteClient))
             {
                 connectedClients.Add(remoteClient);
-                AddClient(remoteClient);
+                // Encola la adición del cliente para ejecutarse en el hilo principal
+                mainThreadActions.Enqueue(() => AddClient(remoteClient));
             }
 
             if (receivedMessage.StartsWith("POS:"))
             {
                 string positionDataStr = receivedMessage.Substring(4);
                 Position positionData = Position.Deserialize(positionDataStr);
-                clientPositions[remoteClient] = positionData;
 
-                if (clientPlayerInstances.ContainsKey(remoteClient))
+                // Encola la actualización de la posición para ejecutarse en el hilo principal
+                mainThreadActions.Enqueue(() =>
                 {
-                    clientPlayerInstances[remoteClient].transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
-                }
+                    if (clientPlayerInstances.ContainsKey(remoteClient))
+                    {
+                        clientPlayerInstances[remoteClient].transform.position =
+                            new Vector3(positionData.x, positionData.y, positionData.z);
+                    }
+                });
 
-                BroadcastPosition(positionData, remoteClient);
+                // Encola la transmisión de la posición a otros clientes
+                mainThreadActions.Enqueue(() => BroadcastPosition(positionData, remoteClient));
             }
             else
             {
-                messageQueue.Enqueue($"{receivedMessage}");
-                BroadcastMessage(receivedMessage, remoteClient);
+                messageQueue.Enqueue(receivedMessage);
+                // Encola la transmisión del mensaje
+                mainThreadActions.Enqueue(() => BroadcastMessage(receivedMessage, remoteClient));
             }
         }
     }
 
+
     void AddClient(EndPoint clientEndpoint)
     {
-        if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
+        // Asegúrate de que las acciones se ejecuten en el hilo principal
+        mainThreadActions.Enqueue(() =>
         {
-            var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
-            clientPlayerInstances[clientEndpoint] = newClientInstance;
-            Debug.Log("Client Added: " + newClientInstance.name);
-        }
+            if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
+            {
+                var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
+                clientPlayerInstances[clientEndpoint] = newClientInstance;
+                Debug.Log("Cliente añadido: " + newClientInstance.name);
+            }
+        });
     }
 
     void BroadcastServerPosition()
     {
-        if (serverObject == null)
+        if (dynamicServerObject == null)
         {
-            Debug.LogWarning("Server object is null; cannot broadcast position.");
+            Debug.LogWarning("dynamicServerObject no está asignado; no se puede transmitir la posición.");
             return;
         }
 
-        Position serverPosition = new Position(serverObject.transform.position.x, serverObject.transform.position.y, serverObject.transform.position.z);
-        Debug.Log($"Broadcasting server position: {serverPosition.x}, {serverPosition.y}, {serverPosition.z}");
+        Vector3 position = dynamicServerObject.transform.position;
+        Position serverPosition = new Position(position.x, position.y, position.z);
+
+        Debug.Log($"Transmitiendo posición del servidor: {serverPosition.x}, {serverPosition.y}, {serverPosition.z}");
         BroadcastPosition(serverPosition, null);
     }
-
 
     void BroadcastPosition(Position position, EndPoint sender)
     {
