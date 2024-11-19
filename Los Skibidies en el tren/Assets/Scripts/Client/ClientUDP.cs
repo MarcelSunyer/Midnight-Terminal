@@ -79,10 +79,12 @@ public class ClientUDP : MonoBehaviour
 
     void SendPlayerPosition()
     {
-        Vector3 playerPosition = transform.position;
-        Position positionData = new Position(playerPosition.x, playerPosition.y, playerPosition.z);
-        string serializedPosition = "POS:" + Position.Serialize(positionData);
-        SendMessageToServer(serializedPosition);
+        Vector3 position = transform.position;
+        Quaternion rotation = transform.rotation;
+        Position data = new Position(position.x, position.y, position.z, rotation);
+
+        string serializedData = "POS:" + Position.Serialize(data);
+        SendMessageToServer(serializedData);
     }
 
     void Receive()
@@ -115,16 +117,16 @@ public class ClientUDP : MonoBehaviour
         }
     }
 
-    void UpdateServerPosition(Position position)
+    void UpdateServerPosition(Position data)
     {
         if (serverInstance != null)
         {
-            Debug.Log($"Updating server position to: {position.x}, {position.y}, {position.z}");
-            serverInstance.transform.position = new Vector3(position.x, position.y, position.z);
+            serverInstance.transform.position = new Vector3(data.x, data.y, data.z);
+            serverInstance.transform.rotation = new Quaternion(data.rotX, data.rotY, data.rotZ, data.rotW);
         }
         else
         {
-            Debug.LogWarning("Server instance is null; cannot update position.");
+            Debug.LogWarning("Server instance is null; cannot update position and rotation.");
         }
     }
 

@@ -110,17 +110,16 @@ public class ServerUDP : MonoBehaviour
                 string positionDataStr = receivedMessage.Substring(4);
                 Position positionData = Position.Deserialize(positionDataStr);
 
-                // Encola la actualización de la posición para ejecutarse en el hilo principal
                 mainThreadActions.Enqueue(() =>
                 {
                     if (clientPlayerInstances.ContainsKey(remoteClient))
                     {
-                        clientPlayerInstances[remoteClient].transform.position =
-                            new Vector3(positionData.x, positionData.y, positionData.z);
+                        var clientObject = clientPlayerInstances[remoteClient];
+                        clientObject.transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
+                        clientObject.transform.rotation = new Quaternion(positionData.rotX, positionData.rotY, positionData.rotZ, positionData.rotW);
                     }
                 });
 
-                // Encola la transmisión de la posición a otros clientes
                 mainThreadActions.Enqueue(() => BroadcastPosition(positionData, remoteClient));
             }
             else
@@ -156,10 +155,16 @@ public class ServerUDP : MonoBehaviour
         }
 
         Vector3 position = dynamicServerObject.transform.position;
-        Position serverPosition = new Position(position.x, position.y, position.z);
+        Quaternion rotation = dynamicServerObject.transform.rotation;
+        Position serverData = new Position(position.x, position.y, position.z, rotation);
 
-        Debug.Log($"Transmitiendo posición del servidor: {serverPosition.x}, {serverPosition.y}, {serverPosition.z}");
-        BroadcastPosition(serverPosition, null);
+        string serializedData = "POS:" + Position.Serialize(serverData);
+        byte[] buffer = Encoding.ASCII.GetBytes(serializedData);
+
+        foreach (var client in connectedClients)
+        {
+            socket.SendTo(buffer, client);
+        }
     }
 
     void BroadcastPosition(Position position, EndPoint sender)
