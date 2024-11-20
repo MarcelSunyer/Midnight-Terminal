@@ -51,15 +51,16 @@ The mutants at *Hospitalet Station* are the result of heavy radiation exposure. 
 
 - **WASD** - Move
 - **Mouse** - Look around
-- **E** - Interact
+- **E** - Interact (WIP)
 - **Shift** - Run
 - **Ctrl** - Crouch
-- **F** - Flashlight
-- **R** - Reload
-- **Tab** - Inventory
+- **F** - Flashlight (WIP)
+- **T** - Open text
+- **R** - Reload (WIP)
+- **Tab** - Inventory (WIP)
 - **Space** - Jump
-- **Left Mouse Button** - Use Tool/Attack
-- **Right Mouse Button** - Aim/Defend
+- **Left Mouse Button** - Use Tool/Attack (WIP)
+- **Right Mouse Button** - Aim/Defend (WIP)
 
 ## 📖 **Lore**
 
@@ -67,7 +68,7 @@ After a catastrophic failure at the nearby nuclear power plant, *Hospitalet Stat
 
 ## 🗺️ **Development Roadmap**
 
-- 🏗️ **Alpha Version**: Core mechanics, basic mutant AI, and multiplayer gameplay.
+- 🏗️ **Alpha Version**: Core mechanics, and multiplayer gameplay.
 - 🔧 **Beta Version**: Advanced AI, resource management, and randomized events.
 - 🚀 **Full Release**: Story mode, additional levels, co-op puzzles, and upgraded weapons.
 
