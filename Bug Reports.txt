@@ -1,3 +1,3 @@
 Lista de bugs conocidos:
 - Puedes unirte a un servidor sin que esté creado, por tanto si haces Join Server sin ningún servidor creado jugarás en local tú solo.
-- 
+- El nametag siempre es "Juan" como un WIP
