@@ -1,5 +1,7 @@
 # 🚂 **Midnight Terminal**
 
+Realese link: https://github.com/MarcelSunyer/Midnight-Terminal/releases/tag/Alpha-Midnight-Terminal
+
 Welcome to **Midnight Terminal**, a tense and cooperative survival game set in the abandoned *Hospitalet Station*. After a catastrophic nuclear disaster, you and your team are the last hope to restore order in a decaying train station filled with deadly mutants. Work together to repair the trains and reactivate the station, but beware—the irradiated creatures lurking in the shadows won't make it easy.
 
 ## 📜 **Overview**
