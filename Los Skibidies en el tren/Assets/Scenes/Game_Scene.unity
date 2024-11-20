@@ -1651,6 +1651,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 107.7109
       objectReference: {fileID: 0}
+    - target: {fileID: 517887590716017509, guid: 156908eb114e6aa44a4b8f45552dfee9, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.302
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 156908eb114e6aa44a4b8f45552dfee9, type: 3}
       propertyPath: m_Name
       value: SalaInicial (1)
@@ -1663,6 +1667,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 07ff787da53b8ad49a52e78ed554a370, type: 2}
+    - target: {fileID: 7183556130813584184, guid: 156908eb114e6aa44a4b8f45552dfee9, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.204
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -6070900075407532760, guid: 156908eb114e6aa44a4b8f45552dfee9, type: 3}
