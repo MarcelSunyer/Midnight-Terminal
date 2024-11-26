@@ -142,6 +142,7 @@ public class ServerUDP : MonoBehaviour
                 var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
                 clientPlayerInstances[clientEndpoint] = newClientInstance;
                 Debug.Log("Cliente añadido: " + newClientInstance.name);
+                BroadcastName("NAME:" + PlayerPrefs.GetString("Name_Player"));
             }
         });
     }
@@ -166,7 +167,17 @@ public class ServerUDP : MonoBehaviour
             socket.SendTo(buffer, client);
         }
     }
+    void BroadcastName(string message)
+    {
+        byte[] data = Encoding.ASCII.GetBytes(message);
 
+        foreach (var client in connectedClients)
+        {
+            
+            socket.SendTo(data, client);
+            
+        }
+    }
     void BroadcastPosition(Position position, EndPoint sender)
     {
         string serializedPosition = "POS:" + Position.Serialize(position);
@@ -179,8 +190,9 @@ public class ServerUDP : MonoBehaviour
                 socket.SendTo(data, client);
             }
         }
-    }
 
+    }
+   
     void BroadcastMessage(string message, EndPoint sender)
     {
         byte[] data = Encoding.ASCII.GetBytes(message);

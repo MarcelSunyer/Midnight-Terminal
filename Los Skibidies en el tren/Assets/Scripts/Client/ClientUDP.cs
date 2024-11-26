@@ -5,6 +5,8 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
+using System;
+using TMPro;
 
 public class ClientUDP : MonoBehaviour
 {
@@ -113,6 +115,29 @@ public class ClientUDP : MonoBehaviour
                 {
                     SendMessageToChat(receivedMessage, Message.MessageType.info);
                 });
+            }
+            if (receivedMessage.StartsWith("NAME:"))
+            {
+                string nameServer = receivedMessage.Substring(4);
+                
+
+                mainThreadTasks.Enqueue(() =>
+                {
+                    UpdateServerName(nameServer);
+                });
+            }
+        }
+    }
+    void UpdateServerName(String name)
+    {
+        if (serverInstance != null)
+        {
+            // Busca el componente TextMeshPro en los hijos
+            TextMeshPro textMeshPro = serverInstance.GetComponentInChildren<TextMeshPro>();
+
+            if (textMeshPro != null)
+            {
+                textMeshPro.text = name;
             }
         }
     }
