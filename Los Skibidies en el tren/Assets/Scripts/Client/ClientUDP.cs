@@ -116,7 +116,7 @@ public class ClientUDP : MonoBehaviour
                     SendMessageToChat(receivedMessage, Message.MessageType.info);
                 });
             }
-            if (receivedMessage.StartsWith("NAME:"))
+            if (receivedMessage.StartsWith("NAME"))
             {
                 string nameServer = receivedMessage.Substring(4);
                 

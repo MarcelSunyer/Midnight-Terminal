@@ -141,8 +141,7 @@ public class ServerUDP : MonoBehaviour
             {
                 var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
                 clientPlayerInstances[clientEndpoint] = newClientInstance;
-                Debug.Log("Cliente añadido: " + newClientInstance.name);
-                BroadcastName("NAME:" + PlayerPrefs.GetString("Name_Player"));
+                BroadcastName("NAME" + PlayerPrefs.GetString("Name_Player"));
             }
         });
     }
