@@ -85,9 +85,6 @@ public class ServerUDP : MonoBehaviour
 
         BroadcastServerPosition();
     }
-
-
-
     void Receive()
     {
         byte[] data = new byte[1024];
@@ -98,34 +95,43 @@ public class ServerUDP : MonoBehaviour
             int recv = socket.ReceiveFrom(data, ref remoteClient);
             string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
+            // Validar si el cliente es nuevo
             if (!connectedClients.Contains(remoteClient))
             {
                 connectedClients.Add(remoteClient);
-                // Encola la adición del cliente para ejecutarse en el hilo principal
                 mainThreadActions.Enqueue(() => AddClient(remoteClient));
             }
 
+            // Manejar mensajes de posición
             if (receivedMessage.StartsWith("POS:"))
             {
                 string positionDataStr = receivedMessage.Substring(4);
-                Position positionData = Position.Deserialize(positionDataStr);
 
-                mainThreadActions.Enqueue(() =>
+                // Manejo seguro de datos
+                if (Position.TryDeserialize(positionDataStr, out Position positionData))
                 {
-                    if (clientPlayerInstances.ContainsKey(remoteClient))
+                    mainThreadActions.Enqueue(() =>
                     {
-                        var clientObject = clientPlayerInstances[remoteClient];
-                        clientObject.transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
-                        clientObject.transform.rotation = new Quaternion(positionData.rotX, positionData.rotY, positionData.rotZ, positionData.rotW);
-                    }
-                });
+                        if (clientPlayerInstances.ContainsKey(remoteClient))
+                        {
+                            var clientObject = clientPlayerInstances[remoteClient];
+                            clientObject.transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
+                            clientObject.transform.rotation = new Quaternion(positionData.rotX, positionData.rotY, positionData.rotZ, positionData.rotW);
+                        }
+                    });
 
-                mainThreadActions.Enqueue(() => BroadcastPosition(positionData, remoteClient));
+                    // Transmitir posición a otros clientes
+                    mainThreadActions.Enqueue(() => BroadcastPosition(positionData, remoteClient));
+                }
+                else
+                {
+                    Debug.LogWarning($"Datos de posición malformados recibidos de {remoteClient}");
+                }
             }
             else
             {
+                // Otros tipos de mensajes
                 messageQueue.Enqueue(receivedMessage);
-                // Encola la transmisión del mensaje
                 mainThreadActions.Enqueue(() => BroadcastMessage(receivedMessage, remoteClient));
             }
         }
@@ -134,16 +140,18 @@ public class ServerUDP : MonoBehaviour
 
     void AddClient(EndPoint clientEndpoint)
     {
-        // Asegúrate de que las acciones se ejecuten en el hilo principal
         mainThreadActions.Enqueue(() =>
         {
             if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
             {
+                // Instanciar un nuevo objeto para el cliente
                 var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
                 clientPlayerInstances[clientEndpoint] = newClientInstance;
+
+                // Transmitir información de cliente (ej. nombre e ID únicos);
                 BroadcastName("NAME" + PlayerPrefs.GetString("Name_Player"));
             }
-        });
+        });     
     }
 
     void BroadcastServerPosition()
@@ -184,14 +192,13 @@ public class ServerUDP : MonoBehaviour
 
         foreach (var client in connectedClients)
         {
-            if (sender == null || !client.Equals(sender))
+            if (!client.Equals(sender)) // No enviar al remitente
             {
                 socket.SendTo(data, client);
             }
         }
-
     }
-   
+
     void BroadcastMessage(string message, EndPoint sender)
     {
         byte[] data = Encoding.ASCII.GetBytes(message);

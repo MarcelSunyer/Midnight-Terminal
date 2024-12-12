@@ -27,4 +27,17 @@ public class Position
     {
         return JsonUtility.FromJson<Position>(json);
     }
+    public static bool TryDeserialize(string json, out Position position)
+    {
+        try
+        {
+            position = JsonUtility.FromJson<Position>(json);
+            return true;
+        }
+        catch
+        {
+            position = null;
+            return false;
+        }
+    }
 }

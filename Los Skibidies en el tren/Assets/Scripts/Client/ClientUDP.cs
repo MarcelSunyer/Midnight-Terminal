@@ -27,6 +27,9 @@ public class ClientUDP : MonoBehaviour
     List<Message> messageList = new List<Message>();
     string playerName;
 
+    private Vector3 lastPosition;
+    private Quaternion lastRotation;
+
     public GameObject serverRepresentationPrefab;
     private GameObject serverInstance;
 
@@ -81,12 +84,19 @@ public class ClientUDP : MonoBehaviour
 
     void SendPlayerPosition()
     {
-        Vector3 position = transform.position;
-        Quaternion rotation = transform.rotation;
-        Position data = new Position(position.x, position.y, position.z, rotation);
+        Vector3 currentPosition = transform.position;
+        Quaternion currentRotation = transform.rotation;
 
-        string serializedData = "POS:" + Position.Serialize(data);
-        SendMessageToServer(serializedData);
+        // Enviar solo si hay cambios significativos
+        if (Vector3.Distance(lastPosition, currentPosition) > 0.01f || Quaternion.Angle(lastRotation, currentRotation) > 0.1f)
+        {
+            Position data = new Position(currentPosition.x, currentPosition.y, currentPosition.z, currentRotation);
+            string serializedData = "POS:" + Position.Serialize(data);
+            SendMessageToServer(serializedData);
+
+            lastPosition = currentPosition;
+            lastRotation = currentRotation;
+        }
     }
 
     void Receive()
