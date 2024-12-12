@@ -198,7 +198,25 @@ public class ServerUDP : MonoBehaviour
             }
         }
     }
+    //TODO: Analizar todo esto para enviar los datos a todos los clientes
+    //void BroadcastAllClientsData(EndPoint requestingClient)
+    //{
+    //    foreach (var clientEndpoint in clientPlayerInstances.Keys)
+    //    {
+    //        if (clientPlayerInstances[clientEndpoint] != null)
+    //        {
+    //            var clientObject = clientPlayerInstances[clientEndpoint];
+    //            Vector3 position = clientObject.transform.position;
+    //            Quaternion rotation = clientObject.transform.rotation;
 
+    //            Position positionData = new Position(position.x, position.y, position.z, rotation);
+    //            string serializedPosition = "POS:" + Position.Serialize(positionData);
+
+    //            byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
+    //            socket.SendTo(data, requestingClient);
+    //        }
+    //    }
+    //}
     void BroadcastMessage(string message, EndPoint sender)
     {
         byte[] data = Encoding.ASCII.GetBytes(message);

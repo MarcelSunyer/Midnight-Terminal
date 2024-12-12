@@ -30,6 +30,7 @@ public class ClientUDP : MonoBehaviour
     private Vector3 lastPosition;
     private Quaternion lastRotation;
 
+
     public GameObject serverRepresentationPrefab;
     private GameObject serverInstance;
 
@@ -135,6 +136,11 @@ public class ClientUDP : MonoBehaviour
                 {
                     UpdateServerName(nameServer);
                 });
+            }
+            if (receivedMessage.StartsWith("NEWCLIENT:"))
+            {
+                //TODO:
+                //Con esto manejas toda la logica enviada por els erver...
             }
         }
     }
