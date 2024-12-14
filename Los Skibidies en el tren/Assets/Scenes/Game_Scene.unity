@@ -726,6 +726,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8ff1e733bb2a1d4da1435b1dd218e53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  prefab1: {fileID: 6687710308108566579, guid: 6f25c661a9bace746b4d9b357e61eed2, type: 3}
+  prefab2: {fileID: 6687710308108566579, guid: e7dd4f3ebed0f2248968a74617652c89, type: 3}
+  targetScene: TrainStation_Level
 --- !u!65 &1057390275
 BoxCollider:
   m_ObjectHideFlags: 0
