@@ -38,6 +38,8 @@ public class Clean_Debris : MonoBehaviour, IInteractable
             // Si se alcanza el tiempo necesario, destruye el padre del objeto
             if (holdCounter >= holdTime)
             {
+                //TODO: Faltaría hacer que se actualice a todos los jugadores
+
                 Debug.Log("Padre del objeto eliminado.");
                 Destroy(transform.parent.gameObject); // Elimina el padre del GameObject
             }
