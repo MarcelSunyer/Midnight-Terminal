@@ -231,6 +231,7 @@ MonoBehaviour:
   messageList: []
   clientPrefab: {fileID: 6687710308108566579, guid: 5e3c5034a87061b48a488e6d7825319f, type: 3}
   serverRepresentationPrefab: {fileID: 6687710308108566579, guid: 5e3c5034a87061b48a488e6d7825319f, type: 3}
+  interpolationSpeed: 5
 --- !u!1 &6687710308015320588
 GameObject:
   m_ObjectHideFlags: 0
@@ -633,6 +634,7 @@ GameObject:
   - component: {fileID: 6687710308866632352}
   - component: {fileID: 6687710308866632359}
   - component: {fileID: 6687710308866632358}
+  - component: {fileID: 8198517530448526785}
   m_Layer: 0
   m_Name: PlayerCamera
   m_TagString: MainCamera
@@ -715,6 +717,20 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6687710308866632357}
   m_Enabled: 1
+--- !u!114 &8198517530448526785
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6687710308866632357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 778325a1faac41641a768af2b2b9a71b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  InteractorSource: {fileID: 6687710308866632352}
+  InteractRange: 3
 --- !u!1 &6687710308954003131
 GameObject:
   m_ObjectHideFlags: 0
