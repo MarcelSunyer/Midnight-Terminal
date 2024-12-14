@@ -30,9 +30,13 @@ public class ClientUDP : MonoBehaviour
     private Vector3 lastPosition;
     private Quaternion lastRotation;
 
+    private Dictionary<string, GameObject> clientInstances = new Dictionary<string, GameObject>();
+    public GameObject clientPrefab; 
 
     public GameObject serverRepresentationPrefab;
     private GameObject serverInstance;
+
+    public float interpolationSpeed = 5f; // Velocidad de interpolación
 
     void Start()
     {
@@ -110,6 +114,7 @@ public class ClientUDP : MonoBehaviour
             int recv = socket.ReceiveFrom(data, ref remoteEndPoint);
             string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
+            //TODO: Separar por posclient y server
             if (receivedMessage.StartsWith("POS:"))
             {
                 string positionDataStr = receivedMessage.Substring(4);
@@ -139,8 +144,23 @@ public class ClientUDP : MonoBehaviour
             }
             if (receivedMessage.StartsWith("NEWCLIENT:"))
             {
-                //TODO:
-                //Con esto manejas toda la logica enviada por els erver...
+                string clientInfo = receivedMessage.Substring(10); // Extrae la información del cliente
+                string[] parts = clientInfo.Split(':'); // Asume que el mensaje tiene un formato tipo "IP:Port"
+                if (parts.Length == 2)
+                {
+                    string clientID = clientInfo; // Usar IP:Port como identificador único
+                    mainThreadTasks.Enqueue(() =>
+                    {
+                        if (!clientInstances.ContainsKey(clientID))
+                        {
+                            // Crear una instancia para el nuevo cliente
+                            GameObject newClientInstance = Instantiate(clientPrefab, Vector3.zero, Quaternion.identity);
+                            clientInstances[clientID] = newClientInstance;
+
+                            Debug.Log($"Cliente nuevo añadido: {clientID}");
+                        }
+                    });
+                }
             }
         }
     }

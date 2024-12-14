@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
 using System.Collections.Concurrent;
+using System;
 
 public class ServerUDP : MonoBehaviour
 {
@@ -37,6 +38,7 @@ public class ServerUDP : MonoBehaviour
     private Dictionary<EndPoint, GameObject> clientPlayerInstances = new Dictionary<EndPoint, GameObject>();
     private Queue<System.Action> mainThreadActions = new Queue<System.Action>(); 
 
+
     void Start()
     {
         player_name = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
@@ -54,6 +56,8 @@ public class ServerUDP : MonoBehaviour
         receiveThread.Start();
 
         SendMessageToChat("Starting server...", Message.MessageType.info);
+    
+       
     }
 
     void Update()
@@ -84,6 +88,11 @@ public class ServerUDP : MonoBehaviour
         }
 
         BroadcastServerPosition();
+
+        if (clientPlayerInstances.Count > 1)
+        {
+            SendPossitionBetweenClients();
+        }
     }
     void Receive()
     {
@@ -137,6 +146,30 @@ public class ServerUDP : MonoBehaviour
         }
     }
 
+    private void SendPossitionBetweenClients()
+    {
+        foreach (var senderClient in clientPlayerInstances.Keys)
+        {
+            if (clientPlayerInstances[senderClient] != null)
+            {
+                var clientObject = clientPlayerInstances[senderClient];
+                Vector3 position = clientObject.transform.position;
+                Quaternion rotation = clientObject.transform.rotation;
+
+                Position positionData = new Position(position.x, position.y, position.z, rotation);
+                string serializedPosition = "POS:" + Position.Serialize(positionData);
+                byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
+
+                foreach (var receiverClient in connectedClients)
+                {
+                    if (!receiverClient.Equals(senderClient))
+                    {
+                        socket.SendTo(data, receiverClient);
+                    }
+                }
+            }
+        }
+    }
 
     void AddClient(EndPoint clientEndpoint)
     {
@@ -150,6 +183,13 @@ public class ServerUDP : MonoBehaviour
 
                 // Transmitir información de cliente (ej. nombre e ID únicos);
                 BroadcastName("NAME" + PlayerPrefs.GetString("Name_Player"));
+
+                string newClientMessage = $"NEWCLIENT:{clientEndpoint.ToString()}";
+                BroadcastMessage(newClientMessage, clientEndpoint);
+
+                BroadcastAllClientsData(clientEndpoint);
+
+                Debug.Log($"Nuevo cliente añadido: {clientEndpoint}");
             }
         });     
     }
@@ -199,24 +239,24 @@ public class ServerUDP : MonoBehaviour
         }
     }
     //TODO: Analizar todo esto para enviar los datos a todos los clientes
-    //void BroadcastAllClientsData(EndPoint requestingClient)
-    //{
-    //    foreach (var clientEndpoint in clientPlayerInstances.Keys)
-    //    {
-    //        if (clientPlayerInstances[clientEndpoint] != null)
-    //        {
-    //            var clientObject = clientPlayerInstances[clientEndpoint];
-    //            Vector3 position = clientObject.transform.position;
-    //            Quaternion rotation = clientObject.transform.rotation;
+    void BroadcastAllClientsData(EndPoint requestingClient)
+    {
+        foreach (var clientEndpoint in clientPlayerInstances.Keys)
+        {
+            if (clientPlayerInstances[clientEndpoint] != null)
+            {
+                var clientObject = clientPlayerInstances[clientEndpoint];
+                Vector3 position = clientObject.transform.position;
+                Quaternion rotation = clientObject.transform.rotation;
 
-    //            Position positionData = new Position(position.x, position.y, position.z, rotation);
-    //            string serializedPosition = "POS:" + Position.Serialize(positionData);
+                Position positionData = new Position(position.x, position.y, position.z, rotation);
+                string serializedPosition = "POS:" + Position.Serialize(positionData);
 
-    //            byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
-    //            socket.SendTo(data, requestingClient);
-    //        }
-    //    }
-    //}
+                byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
+                socket.SendTo(data, requestingClient);
+            }
+        }
+    }
     void BroadcastMessage(string message, EndPoint sender)
     {
         byte[] data = Encoding.ASCII.GetBytes(message);

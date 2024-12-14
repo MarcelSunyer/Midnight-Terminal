@@ -229,6 +229,7 @@ MonoBehaviour:
   playerMessage: {r: 0.735849, g: 0.31585974, b: 0.31585974, a: 1}
   infoMessage: {r: 0.8392205, g: 1, b: 0, a: 1}
   messageList: []
+  clientPrefab: {fileID: 6687710308108566579, guid: 5e3c5034a87061b48a488e6d7825319f, type: 3}
   serverRepresentationPrefab: {fileID: 6687710308108566579, guid: 5e3c5034a87061b48a488e6d7825319f, type: 3}
 --- !u!1 &6687710308015320588
 GameObject:
