@@ -123,44 +123,11 @@ public class ClientUDP : MonoBehaviour
 
             if (receivedMessage.StartsWith("NEWCLIENT:"))
             {
-                string clientInfo = receivedMessage.Substring(10); // Extrae "ID:IP:Port"
-                string[] parts = clientInfo.Split(':');
-                if (parts.Length == 3)
-                {
-                    int clientID = int.Parse(parts[0]); // Extraer el ID del cliente
-                    string clientEndpoint = parts[1] + ":" + parts[2]; // Reconstruir el endpoint como identificador único
-
-                    if (clientID >= 1)
-                    {
-                        mainThreadTasks.Enqueue(() =>
-                        {
-                            // Instanciar clientes con ID >= 1 si no existen aún
-                            for (int id = 1; id <= clientID; id++)
-                            {
-                                string instanceKey = $"{clientEndpoint}_ID{id}";
-
-                                if (!clientInstances.ContainsKey(instanceKey))
-                                {
-                                    // Crear una nueva instancia para este ID
-                                    GameObject newClientInstance = Instantiate(clientPrefab, Vector3.zero, Quaternion.identity);
-                                    clientInstances[instanceKey] = newClientInstance;
-
-                                    Debug.Log($"Cliente añadido: ID={id}, Endpoint={clientEndpoint}");
-                                }
-                            }
-                        });
-                    }
-                }
+                HandleNewClient(receivedMessage.Substring(10));
             }
-            else if (receivedMessage.StartsWith("POSCIENT:"))
+            else if (receivedMessage.StartsWith("POSCIENTS:"))
             {
-                string positionDataStr = receivedMessage.Substring(9);
-                Position positionData = Position.Deserialize(positionDataStr);
-
-                mainThreadTasks.Enqueue(() =>
-                {
-                    
-                });
+                HandlePositionUpdate(receivedMessage.Substring(10));
             }
             else if (receivedMessage.StartsWith("POS:"))
             {
@@ -190,6 +157,67 @@ public class ClientUDP : MonoBehaviour
             }
         }
     }
+    void HandleNewClient(string clientInfo)
+    {
+        string[] parts = clientInfo.Split(':');
+        if (parts.Length == 3)
+        {
+            int clientID = int.Parse(parts[0]);
+            string clientEndpoint = $"{parts[1]}:{parts[2]}";
+
+            if (clientID >= 1)
+            {
+                mainThreadTasks.Enqueue(() =>
+                {
+                    for (int id = 1; id <= clientID; id++)
+                    {
+                        string instanceKey = $"{clientEndpoint}_ID{id}";
+
+                        if (!clientInstances.ContainsKey(instanceKey))
+                        {
+                            GameObject newClientInstance = Instantiate(clientPrefab, Vector3.zero, Quaternion.identity);
+                            clientInstances[instanceKey] = newClientInstance;
+
+                            Debug.Log($"Cliente añadido: ID={id}, Endpoint={clientEndpoint}");
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+  void HandlePositionUpdate(string positionDataStr)
+{
+    try
+    {
+        int secondColonIndex = positionDataStr.IndexOf(':');
+        string positionJson = positionDataStr.Substring(secondColonIndex + 1);
+        Position positionData = Position.Deserialize(positionJson);
+
+        mainThreadTasks.Enqueue(() =>
+        {
+            // Ajusta el instanceKey para que coincida con la clave generada en HandleNewClient
+            foreach (var key in clientInstances.Keys)
+            {
+                if (key.Contains($"_ID{positionData.id}")) // Busca una coincidencia parcial con el ID
+                {
+                    if (clientInstances.TryGetValue(key, out GameObject clientObject))
+                    {
+                        clientObject.transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
+                        clientObject.transform.rotation = new Quaternion(positionData.rotX, positionData.rotY, positionData.rotZ, positionData.rotW);
+                        return;
+                    }
+                }
+            }
+
+            Debug.LogWarning($"No se encontró el cliente con ID: {positionData.id}");
+        });
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"Error al procesar mensaje POSCIENTS: {ex.Message}");
+    }
+}
     void UpdateServerName(String name)
     {
         if (serverInstance != null)

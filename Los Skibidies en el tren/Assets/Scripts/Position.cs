@@ -5,7 +5,7 @@ public class Position
 {
     public float x, y, z;             // Posición
     public float rotX, rotY, rotZ, rotW; // Rotación (Quaternion)
-    public string id;                 // Identificador opcional del cliente
+    public string id;
 
     public Position(float x, float y, float z, Quaternion rotation, string id = null)
     {

@@ -143,31 +143,6 @@ public class ServerUDP : MonoBehaviour
             }
         }
     }
-
-    private void SendPossitionBetweenClients()
-    {
-        foreach (var senderClient in clientPlayerInstances.Keys)
-        {
-            if (clientPlayerInstances[senderClient] != null)
-            {
-                var clientObject = clientPlayerInstances[senderClient];
-                Vector3 position = clientObject.transform.position;
-                Quaternion rotation = clientObject.transform.rotation;
-
-                Position positionData = new Position(position.x, position.y, position.z, rotation);
-                string serializedPosition = "POS:" + Position.Serialize(positionData);
-                byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
-
-                foreach (var receiverClient in connectedClients)
-                {
-                    if (!receiverClient.Equals(senderClient))
-                    {
-                        socket.SendTo(data, receiverClient);
-                    }
-                }
-            }
-        }
-    }
     void BroadcastServerPosition()
     {
         if (dynamicServerObject == null)
@@ -222,7 +197,7 @@ public class ServerUDP : MonoBehaviour
                     socket.SendTo(buffer, client);
                 }
                 // Enviar información de otros clientes a este nuevo cliente
-                BroadcastAllClientsData(clientEndpoint);
+                //BroadcastAllClientsData(clientEndpoint);
 
                 Debug.Log($"Nuevo cliente añadido: {clientEndpoint} con ID: {newClientID}");
             }
@@ -230,36 +205,43 @@ public class ServerUDP : MonoBehaviour
     }
     void BroadcastPosition(Position position, EndPoint sender)
     {
-        string serializedPosition = "POSCIENT:" + Position.Serialize(position);
+        if (!clientIDs.TryGetValue(sender, out int senderID))
+        {
+            Debug.LogWarning($"Cliente no registrado para EndPoint: {sender}. No se puede transmitir la posición.");
+            return;
+        }
+
+        string serializedPosition = $"POSCIENTS:{senderID}:{Position.Serialize(position)}";
         byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
 
         foreach (var client in connectedClients)
         {
-            if (!client.Equals(sender)) 
+            // Comparación explícita de EndPoint: IP y puerto
+            if (!client.ToString().Equals(sender.ToString()))
             {
                 socket.SendTo(data, client);
             }
         }
     }
     //TODO: Analizar todo esto para enviar los datos a todos los clientes
-    void BroadcastAllClientsData(EndPoint requestingClient)
-    {
-        foreach (var clientEndpoint in clientPlayerInstances.Keys)
-        {
-            if (clientPlayerInstances[clientEndpoint] != null)
-            {
-                var clientObject = clientPlayerInstances[clientEndpoint];
-                Vector3 position = clientObject.transform.position;
-                Quaternion rotation = clientObject.transform.rotation;
+    //void BroadcastAllClientsData(EndPoint requestingClient)
+    //{
+    //    foreach (var clientEndpoint in clientPlayerInstances.Keys)
+    //    {
+    //        if (clientPlayerInstances[clientEndpoint] != null)
+    //        {
+    //            var clientObject = clientPlayerInstances[clientEndpoint];
+    //            Vector3 position = clientObject.transform.position;
+    //            Quaternion rotation = clientObject.transform.rotation;
 
-                Position positionData = new Position(position.x, position.y, position.z, rotation);
-                string serializedPosition = "POSCIENT:" + Position.Serialize(positionData);
+    //            Position positionData = new Position(position.x, position.y, position.z, rotation);
+    //            string serializedPosition = "POSCIENT:" + Position.Serialize(positionData);
 
-                byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
-                socket.SendTo(data, requestingClient);
-            }
-        }
-    }
+    //            byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
+    //            socket.SendTo(data, requestingClient);
+    //        }
+    //    }
+    //}
     void BroadcastMessage(string message, EndPoint sender)
     {
         byte[] data = Encoding.ASCII.GetBytes(message);
