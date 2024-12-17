@@ -36,7 +36,6 @@ public class ClientUDP : MonoBehaviour
     public GameObject serverRepresentationPrefab;
     private GameObject serverInstance;
 
-    public float interpolationSpeed = 5f; // Velocidad de interpolación
 
     void Start()
     {
@@ -65,7 +64,15 @@ public class ClientUDP : MonoBehaviour
     {
         while (mainThreadTasks.Count > 0)
         {
-            mainThreadTasks.Dequeue().Invoke();
+            var action = mainThreadTasks.Dequeue();
+            if (action != null)
+            {
+                action.Invoke();
+            }
+            else
+            {
+                Debug.LogWarning("Se encontró una acción nula en mainThreadTasks.");
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.T))
@@ -114,8 +121,48 @@ public class ClientUDP : MonoBehaviour
             int recv = socket.ReceiveFrom(data, ref remoteEndPoint);
             string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
-            //TODO: Separar por posclient y server
-            if (receivedMessage.StartsWith("POS:"))
+            if (receivedMessage.StartsWith("NEWCLIENT:"))
+            {
+                string clientInfo = receivedMessage.Substring(10); // Extrae "ID:IP:Port"
+                string[] parts = clientInfo.Split(':');
+                if (parts.Length == 3)
+                {
+                    int clientID = int.Parse(parts[0]); // Extraer el ID del cliente
+                    string clientEndpoint = parts[1] + ":" + parts[2]; // Reconstruir el endpoint como identificador único
+
+                    if (clientID >= 1)
+                    {
+                        mainThreadTasks.Enqueue(() =>
+                        {
+                            // Instanciar clientes con ID >= 1 si no existen aún
+                            for (int id = 1; id <= clientID; id++)
+                            {
+                                string instanceKey = $"{clientEndpoint}_ID{id}";
+
+                                if (!clientInstances.ContainsKey(instanceKey))
+                                {
+                                    // Crear una nueva instancia para este ID
+                                    GameObject newClientInstance = Instantiate(clientPrefab, Vector3.zero, Quaternion.identity);
+                                    clientInstances[instanceKey] = newClientInstance;
+
+                                    Debug.Log($"Cliente añadido: ID={id}, Endpoint={clientEndpoint}");
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            else if (receivedMessage.StartsWith("POSCIENT:"))
+            {
+                string positionDataStr = receivedMessage.Substring(9);
+                Position positionData = Position.Deserialize(positionDataStr);
+
+                mainThreadTasks.Enqueue(() =>
+                {
+                    
+                });
+            }
+            else if (receivedMessage.StartsWith("POS:"))
             {
                 string positionDataStr = receivedMessage.Substring(4);
                 Position positionData = Position.Deserialize(positionDataStr);
@@ -125,42 +172,21 @@ public class ClientUDP : MonoBehaviour
                     UpdateServerPosition(positionData);
                 });
             }
-            else
-            {
-                mainThreadTasks.Enqueue(() =>
-                {
-                    SendMessageToChat(receivedMessage, Message.MessageType.info);
-                });
-            }
-            if (receivedMessage.StartsWith("NAME"))
+            else if (receivedMessage.StartsWith("NAME"))
             {
                 string nameServer = receivedMessage.Substring(4);
-                
 
                 mainThreadTasks.Enqueue(() =>
                 {
                     UpdateServerName(nameServer);
                 });
             }
-            if (receivedMessage.StartsWith("NEWCLIENT:"))
+            else
             {
-                string clientInfo = receivedMessage.Substring(10); // Extrae la información del cliente
-                string[] parts = clientInfo.Split(':'); // Asume que el mensaje tiene un formato tipo "IP:Port"
-                if (parts.Length == 2)
+                mainThreadTasks.Enqueue(() =>
                 {
-                    string clientID = clientInfo; // Usar IP:Port como identificador único
-                    mainThreadTasks.Enqueue(() =>
-                    {
-                        if (!clientInstances.ContainsKey(clientID))
-                        {
-                            // Crear una instancia para el nuevo cliente
-                            GameObject newClientInstance = Instantiate(clientPrefab, Vector3.zero, Quaternion.identity);
-                            clientInstances[clientID] = newClientInstance;
-
-                            Debug.Log($"Cliente nuevo añadido: {clientID}");
-                        }
-                    });
-                }
+                    SendMessageToChat(receivedMessage, Message.MessageType.info);
+                });
             }
         }
     }

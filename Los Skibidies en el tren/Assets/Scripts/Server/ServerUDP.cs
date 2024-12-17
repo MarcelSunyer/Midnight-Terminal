@@ -36,7 +36,10 @@ public class ServerUDP : MonoBehaviour
     public GameObject dynamicServerObject;
 
     private Dictionary<EndPoint, GameObject> clientPlayerInstances = new Dictionary<EndPoint, GameObject>();
-    private Queue<System.Action> mainThreadActions = new Queue<System.Action>(); 
+    private Queue<System.Action> mainThreadActions = new Queue<System.Action>();
+
+    private int clientIDCounter = 0;
+    private Dictionary<EndPoint, int> clientIDs = new Dictionary<EndPoint, int>();
 
 
     void Start()
@@ -88,11 +91,6 @@ public class ServerUDP : MonoBehaviour
         }
 
         BroadcastServerPosition();
-
-        if (clientPlayerInstances.Count > 1)
-        {
-            SendPossitionBetweenClients();
-        }
     }
     void Receive()
     {
@@ -170,30 +168,6 @@ public class ServerUDP : MonoBehaviour
             }
         }
     }
-
-    void AddClient(EndPoint clientEndpoint)
-    {
-        mainThreadActions.Enqueue(() =>
-        {
-            if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
-            {
-                // Instanciar un nuevo objeto para el cliente
-                var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
-                clientPlayerInstances[clientEndpoint] = newClientInstance;
-
-                // Transmitir información de cliente (ej. nombre e ID únicos);
-                BroadcastName("NAME" + PlayerPrefs.GetString("Name_Player"));
-
-                string newClientMessage = $"NEWCLIENT:{clientEndpoint.ToString()}";
-                BroadcastMessage(newClientMessage, clientEndpoint);
-
-                BroadcastAllClientsData(clientEndpoint);
-
-                Debug.Log($"Nuevo cliente añadido: {clientEndpoint}");
-            }
-        });     
-    }
-
     void BroadcastServerPosition()
     {
         if (dynamicServerObject == null)
@@ -220,19 +194,48 @@ public class ServerUDP : MonoBehaviour
 
         foreach (var client in connectedClients)
         {
-            
             socket.SendTo(data, client);
-            
         }
+    }
+    void AddClient(EndPoint clientEndpoint)
+    {
+        mainThreadActions.Enqueue(() =>
+        {
+            if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
+            {
+                // Asignar un ID único al cliente
+                int newClientID = clientIDCounter++;
+                clientIDs[clientEndpoint] = newClientID;
+
+                // Instanciar un nuevo objeto para el cliente
+                var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
+                clientPlayerInstances[clientEndpoint] = newClientInstance;
+
+                // Transmitir el ID del cliente al cliente respectivo
+
+                string newClientMessage = $"NEWCLIENT:{newClientID}:{clientEndpoint}";
+                             
+                byte[] buffer = Encoding.ASCII.GetBytes(newClientMessage);
+
+                foreach (var client in connectedClients)
+                {
+                    socket.SendTo(buffer, client);
+                }
+                // Enviar información de otros clientes a este nuevo cliente
+                BroadcastAllClientsData(clientEndpoint);
+
+                Debug.Log($"Nuevo cliente añadido: {clientEndpoint} con ID: {newClientID}");
+            }
+        });
     }
     void BroadcastPosition(Position position, EndPoint sender)
     {
-        string serializedPosition = "POS:" + Position.Serialize(position);
+        string serializedPosition = "POSCIENT:" + Position.Serialize(position);
         byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
 
         foreach (var client in connectedClients)
         {
-            if (!client.Equals(sender)) // No enviar al remitente
+            if (!client.Equals(sender)) 
             {
                 socket.SendTo(data, client);
             }
@@ -250,7 +253,7 @@ public class ServerUDP : MonoBehaviour
                 Quaternion rotation = clientObject.transform.rotation;
 
                 Position positionData = new Position(position.x, position.y, position.z, rotation);
-                string serializedPosition = "POS:" + Position.Serialize(positionData);
+                string serializedPosition = "POSCIENT:" + Position.Serialize(positionData);
 
                 byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
                 socket.SendTo(data, requestingClient);
