@@ -51,6 +51,7 @@ MonoBehaviour:
   messageList: []
   serverObject: {fileID: 6687710308108566579, guid: 8fe8564de383fc44b9c85ea181deedfb, type: 3}
   dynamicServerObject: {fileID: 6687710308108566579}
+  clean_Debris: {fileID: 0}
 --- !u!1 &4896526341178008160
 GameObject:
   m_ObjectHideFlags: 0
@@ -1277,7 +1278,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7aef56e62b9a6f3459f9b0a506589373, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.069
+      value: -0.32
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7aef56e62b9a6f3459f9b0a506589373, type: 3}
       propertyPath: m_LocalRotation.w
