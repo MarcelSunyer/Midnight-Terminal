@@ -18,9 +18,13 @@ public class FirstPersonController : MonoBehaviour
 {
     private Rigidbody rb;
 
+    public Animator animator;
+
     #region Camera Movement Variables
 
     public Camera playerCamera;
+
+    
 
     public float fov = 60f;
     public bool invertCamera = false;
@@ -510,6 +514,7 @@ public class FirstPersonController : MonoBehaviour
     {
         if(isWalking)
         {
+            animator.SetBool("Walk",true);
             // Calculates HeadBob speed during sprint
             if(isSprinting)
             {
@@ -530,6 +535,7 @@ public class FirstPersonController : MonoBehaviour
         }
         else
         {
+            animator.SetBool("Walk", false);
             // Resets when play stops moving
             timer = 0;
             joint.localPosition = new Vector3(Mathf.Lerp(joint.localPosition.x, jointOriginalPos.x, Time.deltaTime * bobSpeed), Mathf.Lerp(joint.localPosition.y, jointOriginalPos.y, Time.deltaTime * bobSpeed), Mathf.Lerp(joint.localPosition.z, jointOriginalPos.z, Time.deltaTime * bobSpeed));
