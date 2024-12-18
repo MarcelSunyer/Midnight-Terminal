@@ -12,6 +12,8 @@ public class Clean_Debris : MonoBehaviour, IInteractable
     public AudioClip cleaningAudio;    // Clip de audio para el proceso de limpieza
     private AudioSource audioSource;   // Componente AudioSource
 
+    public bool isDebrisDestroyed = false;
+
     private void Start()
     {
         // Guarda el tamaño original del objeto
@@ -49,9 +51,9 @@ public class Clean_Debris : MonoBehaviour, IInteractable
             // Si se alcanza el tiempo necesario, destruye el padre del objeto
             if (holdCounter >= holdTime)
             {
-                StopAudio(); // Detener el audio al completar
-                Debug.Log("Padre del objeto eliminado.");
-                Destroy(transform.parent.gameObject); // Elimina el padre del GameObject
+                DestroyDebris();
+                isDebrisDestroyed = true;
+
             }
         }
         else if (transform.localScale != originalScale)
@@ -120,5 +122,13 @@ public class Clean_Debris : MonoBehaviour, IInteractable
             audioSource.Stop();
             audioSource.loop = false;
         }
+    }
+
+    public void DestroyDebris()
+    {
+        isDebrisDestroyed = true;
+        Debug.Log("Jodieeenda");
+        StopAudio(); // Detener el audio al completar
+        Destroy(transform.parent.gameObject);
     }
 }

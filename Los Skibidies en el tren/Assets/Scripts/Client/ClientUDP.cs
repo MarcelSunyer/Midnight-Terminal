@@ -8,6 +8,7 @@ using System.Threading;
 using System;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEditor;
 
 public class ClientUDP : MonoBehaviour
 {
@@ -39,6 +40,11 @@ public class ClientUDP : MonoBehaviour
 
     private bool shouldTeleport = false;
 
+    public Clean_Debris clean_Debris;
+    bool isSceneLoaded;
+
+    bool destoryDebris;
+
     void Start()
     {
         playerName = PlayerPrefs.HasKey("Join_Server_Name") ? PlayerPrefs.GetString("Join_Server_Name") : "No hay texto guardado";
@@ -64,6 +70,11 @@ public class ClientUDP : MonoBehaviour
 
     void Update()
     {
+        if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
+        {
+            clean_Debris = FindObjectOfType<Clean_Debris>();
+        }
+
         if (shouldTeleport)
         {
             shouldTeleport = false; // Resetea la bandera
@@ -119,6 +130,20 @@ public class ClientUDP : MonoBehaviour
             chatbox.ActivateInputField();
         }
 
+         if(destoryDebris)
+            {
+            GameObject obj = GameObject.Find("Escombros_parent");
+            if (obj != null)
+            {
+                Destroy(obj);
+                Debug.Log($"fue destruido.");
+            }
+            else
+            {
+                Debug.LogWarning($"No se encontró el objeto con nombre .");
+            }
+            destoryDebris = false;
+        }
         SendPlayerPosition();
     }
 
@@ -171,6 +196,13 @@ public class ClientUDP : MonoBehaviour
             {
                 TeleportPrefabs();
             }
+            else if (receivedMessage.StartsWith("DEBRISDESTROYED:"))
+            {
+                if (clean_Debris != null)
+                {
+                    DestroyDebris();
+                }
+            }
             else if (receivedMessage.StartsWith("NAME"))
             {
                 string nameServer = receivedMessage.Substring(4);
@@ -187,7 +219,12 @@ public class ClientUDP : MonoBehaviour
                     SendMessageToChat(receivedMessage, Message.MessageType.info);
                 });
             }
+             
         }
+    }
+    void DestroyDebris()
+    {
+        destoryDebris = true;
     }
     void HandleNewClient(string clientInfo)
     {
