@@ -8,10 +8,21 @@ public class Clean_Debris : MonoBehaviour, IInteractable
     private bool isHolding = false;    // Indica si el jugador está manteniendo la tecla
     private Vector3 originalScale;     // Tamaño original del objeto
 
+    // Audio
+    public AudioClip cleaningAudio;    // Clip de audio para el proceso de limpieza
+    private AudioSource audioSource;   // Componente AudioSource
+
     private void Start()
     {
         // Guarda el tamaño original del objeto
         originalScale = transform.localScale;
+
+        // Obtén o agrega un AudioSource al objeto
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     private void Update()
@@ -38,8 +49,7 @@ public class Clean_Debris : MonoBehaviour, IInteractable
             // Si se alcanza el tiempo necesario, destruye el padre del objeto
             if (holdCounter >= holdTime)
             {
-                //TODO: Faltaría hacer que se actualice a todos los jugadores
-
+                StopAudio(); // Detener el audio al completar
                 Debug.Log("Padre del objeto eliminado.");
                 Destroy(transform.parent.gameObject); // Elimina el padre del GameObject
             }
@@ -60,6 +70,7 @@ public class Clean_Debris : MonoBehaviour, IInteractable
     private IEnumerator HandleHold()
     {
         isHolding = true;
+        PlayAudio(); // Reproducir el audio al iniciar la limpieza
 
         // Mientras se mantiene la tecla "E", espera
         while (Input.GetKey(KeyCode.E))
@@ -84,9 +95,30 @@ public class Clean_Debris : MonoBehaviour, IInteractable
 
     private void ResetCleaningProcess()
     {
+        StopAudio(); // Parar el audio
+
         // Reinicia el estado de limpieza
         isHolding = false;
         holdCounter = 0f;
         transform.localScale = originalScale;
+    }
+
+    private void PlayAudio()
+    {
+        if (audioSource != null && cleaningAudio != null)
+        {
+            audioSource.clip = cleaningAudio;
+            audioSource.loop = true; // Audio en bucle mientras se limpia
+            audioSource.Play();
+        }
+    }
+
+    private void StopAudio()
+    {
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+            audioSource.loop = false;
+        }
     }
 }
