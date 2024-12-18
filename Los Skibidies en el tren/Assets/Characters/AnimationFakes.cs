@@ -6,7 +6,7 @@ public class AnimationFakes : MonoBehaviour
 {
     private Vector3 lastPosition; 
     private float elapsedTime; 
-    private const float interval = 0.1f; 
+    private const float interval = 0.05f; 
 
     public Animator animator;
 
