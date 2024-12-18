@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using System.Threading;
 using System;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class ClientUDP : MonoBehaviour
 {
@@ -36,6 +37,7 @@ public class ClientUDP : MonoBehaviour
     public GameObject serverRepresentationPrefab;
     private GameObject serverInstance;
 
+    private bool shouldTeleport = false;
 
     void Start()
     {
@@ -55,13 +57,39 @@ public class ClientUDP : MonoBehaviour
         {
             serverInstance = Instantiate(serverRepresentationPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         }
-
+        DontDestroyOnLoad(serverInstance);
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
     }
 
     void Update()
     {
+        if (shouldTeleport)
+        {
+            shouldTeleport = false; // Resetea la bandera
+
+            foreach (var client in clientInstances.Values)
+            {
+                if (client != null)
+                {
+                    Debug.Log($"Making client indestructible: {client.name}");
+                    DontDestroyOnLoad(client);
+                }
+                else
+                {
+                    Debug.LogWarning("A client instance was null and couldn't be made indestructible.");
+                }
+            }
+
+            // Haz indestructible el servidor
+            if (serverInstance != null)
+            {
+                Debug.Log("Making server instance indestructible.");
+                DontDestroyOnLoad(serverInstance);
+            }
+            SceneManager.LoadScene("TrainStation_Level");
+        }
+    
         while (mainThreadTasks.Count > 0)
         {
             var action = mainThreadTasks.Dequeue();
@@ -139,6 +167,10 @@ public class ClientUDP : MonoBehaviour
                     UpdateServerPosition(positionData);
                 });
             }
+            else if (receivedMessage.StartsWith("GAMESTART:"))
+            {
+                TeleportPrefabs();
+            }
             else if (receivedMessage.StartsWith("NAME"))
             {
                 string nameServer = receivedMessage.Substring(4);
@@ -177,7 +209,7 @@ public class ClientUDP : MonoBehaviour
                         {
                             GameObject newClientInstance = Instantiate(clientPrefab, Vector3.zero, Quaternion.identity);
                             clientInstances[instanceKey] = newClientInstance;
-
+                            DontDestroyOnLoad(clientInstances[instanceKey]);
                             Debug.Log($"Cliente añadido: ID={id}, Endpoint={clientEndpoint}");
                         }
                     }
@@ -196,7 +228,6 @@ public class ClientUDP : MonoBehaviour
 
         mainThreadTasks.Enqueue(() =>
         {
-            // Ajusta el instanceKey para que coincida con la clave generada en HandleNewClient
             foreach (var key in clientInstances.Keys)
             {
                 if (key.Contains($"_ID{positionData.id}")) // Busca una coincidencia parcial con el ID
@@ -268,7 +299,10 @@ public class ClientUDP : MonoBehaviour
 
         messageList.Add(newMessage);
     }
-
+    private void TeleportPrefabs()
+    {
+        shouldTeleport = true; // Marca la operación como pendiente
+    }
     Color MessageTypeColor(Message.MessageType messageType)
     {
         return messageType == Message.MessageType.playerMessage ? playerMessage : infoMessage;

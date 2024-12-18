@@ -42,6 +42,10 @@ public class ServerUDP : MonoBehaviour
     private Dictionary<EndPoint, int> clientIDs = new Dictionary<EndPoint, int>();
 
 
+    private StartGame_Button interactionManager;
+    private GameObject interactionObject;
+
+
     void Start()
     {
         player_name = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
@@ -59,12 +63,21 @@ public class ServerUDP : MonoBehaviour
         receiveThread.Start();
 
         SendMessageToChat("Starting server...", Message.MessageType.info);
-    
-       
+
+        interactionObject = GameObject.Find("Boton");
+
     }
 
     void Update()
     {
+        if (interactionObject != null)
+        {
+            interactionManager = interactionObject.GetComponent<StartGame_Button>();
+            if (interactionManager != null)
+            {
+                interactionManager.OnSceneLoaded += HandleSceneLoaded;
+            }
+        }
         // Procesa todas las acciones encoladas para el hilo principal
         while (mainThreadActions.Count > 0)
         {
@@ -288,6 +301,18 @@ public class ServerUDP : MonoBehaviour
         {
             playerMessage,
             info
+        }
+    }
+    private void HandleSceneLoaded()
+    {
+        Debug.Log("La escena ha sido cargada. Notificando a los clientes...");
+
+        string serializedData = "GAMESTART:La escena ha comenzado.";
+        byte[] buffer = Encoding.ASCII.GetBytes(serializedData);
+
+        foreach (var client in connectedClients)
+        {
+            socket.SendTo(buffer, client);
         }
     }
 }

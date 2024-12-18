@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +16,9 @@ public class StartGame_Button : MonoBehaviour, IInteractable
     // Posición de teletransporte
     public Vector3 teleportPosition = new Vector3(-3, 3, 0);
 
+
+    public event Action OnSceneLoaded;
+
     public void Interact()
     {
         Debug.Log("Game will start soon!");
@@ -24,11 +28,11 @@ public class StartGame_Button : MonoBehaviour, IInteractable
             Debug.LogError("No se ha especificado la escena de destino.");
             return;
         }
-
-        // Encuentra todas las instancias activas en la escena de los prefabs especificados
+        
         TeleportPrefabs(prefab1);
         TeleportPrefabs(prefab2);
 
+        OnSceneLoaded?.Invoke(); // Notifica al servidor que la escena se ha cargado
         // Carga la nueva escena
         SceneManager.LoadScene(targetScene);
     }
