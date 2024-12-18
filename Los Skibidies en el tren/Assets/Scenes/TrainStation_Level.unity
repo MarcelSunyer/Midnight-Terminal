@@ -4376,6 +4376,10 @@ PrefabInstance:
       value: 3.5
       objectReference: {fileID: 0}
     - target: {fileID: -4765999287640130179, guid: e1f6b8154c7041048bbaa8df7e07bc33, type: 3}
+      propertyPath: moveSpeedMin
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: -4765999287640130179, guid: e1f6b8154c7041048bbaa8df7e07bc33, type: 3}
       propertyPath: centerPoint.x
       value: -51.9
       objectReference: {fileID: 0}
@@ -4386,6 +4390,10 @@ PrefabInstance:
     - target: {fileID: -4765999287640130179, guid: e1f6b8154c7041048bbaa8df7e07bc33, type: 3}
       propertyPath: centerPoint.z
       value: 15.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -4765999287640130179, guid: e1f6b8154c7041048bbaa8df7e07bc33, type: 3}
+      propertyPath: radiusChangeSpeed
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 6139854116883303389, guid: e1f6b8154c7041048bbaa8df7e07bc33, type: 3}
       propertyPath: m_Name
