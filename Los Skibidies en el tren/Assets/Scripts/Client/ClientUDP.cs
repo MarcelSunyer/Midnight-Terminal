@@ -43,6 +43,8 @@ public class ClientUDP : MonoBehaviour
     public Clean_Debris clean_Debris;
     bool isSceneLoaded;
 
+    bool isDebrisFound = false;
+
     bool destoryDebris;
 
     void Start()
@@ -73,6 +75,13 @@ public class ClientUDP : MonoBehaviour
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
             clean_Debris = FindObjectOfType<Clean_Debris>();
+            isDebrisFound = true;
+
+        }
+        if (clean_Debris == null && isDebrisFound)
+        {
+            DebrisDestroyed();
+
         }
 
         if (shouldTeleport)
@@ -319,6 +328,15 @@ public class ClientUDP : MonoBehaviour
         byte[] data = Encoding.ASCII.GetBytes(message);
         socket.SendTo(data, serverEndPoint);
     }
+
+    void DebrisDestroyed()
+    {
+        byte[] data = Encoding.ASCII.GetBytes("DEBRISDESTROYED:");
+        socket.SendTo(data, serverEndPoint);        
+        isDebrisFound = true;
+
+    }
+
 
     public void SendMessageToChat(string text, Message.MessageType messageType)
     {

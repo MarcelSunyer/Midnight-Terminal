@@ -49,7 +49,7 @@ public class ServerUDP : MonoBehaviour
     public Clean_Debris clean_Debris;
     bool isSceneLoaded;
     bool isDebrisFound = false;
-
+    bool can_be_destroyed;
     void Start()
     {
         player_name = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
@@ -83,10 +83,12 @@ public class ServerUDP : MonoBehaviour
         if (clean_Debris == null && isDebrisFound)
         {
             DebrisDestroyed();
-
-
         }
-
+        if(can_be_destroyed)
+        {
+            clean_Debris.DestroyDebris();
+            can_be_destroyed = false;
+        }
         if (interactionObject != null)
         {
             interactionManager = interactionObject.GetComponent<StartGame_Button>();
@@ -138,7 +140,12 @@ public class ServerUDP : MonoBehaviour
                 connectedClients.Add(remoteClient);
                 mainThreadActions.Enqueue(() => AddClient(remoteClient));
             }
+            if(receivedMessage.StartsWith("DEBRISDESTROYED:"))
+            {
+                can_be_destroyed = true;
+                DebrisDestroyed();
 
+            }
             // Manejar mensajes de posición
             if (receivedMessage.StartsWith("POS:"))
             {
