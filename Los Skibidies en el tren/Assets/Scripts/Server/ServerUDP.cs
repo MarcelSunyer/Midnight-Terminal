@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using System.Threading;
 using System.Collections.Concurrent;
 using System;
+using UnityEngine.SceneManagement;
 
 public class ServerUDP : MonoBehaviour
 {
@@ -45,6 +46,9 @@ public class ServerUDP : MonoBehaviour
     private StartGame_Button interactionManager;
     private GameObject interactionObject;
 
+    public Clean_Debris clean_Debris;
+    bool isSceneLoaded;
+    bool isDebrisFound = false;
 
     void Start()
     {
@@ -70,6 +74,19 @@ public class ServerUDP : MonoBehaviour
 
     void Update()
     {
+        if(isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
+        {
+            clean_Debris = FindObjectOfType<Clean_Debris>();
+            isDebrisFound = true;
+
+        }
+        if (clean_Debris == null && isDebrisFound)
+        {
+            DebrisDestroyed();
+
+
+        }
+
         if (interactionObject != null)
         {
             interactionManager = interactionObject.GetComponent<StartGame_Button>();
@@ -156,7 +173,21 @@ public class ServerUDP : MonoBehaviour
             }
         }
     }
-    void BroadcastServerPosition()
+
+    void DebrisDestroyed()
+    {
+        string serializedData = "DEBRISDESTROYED:";
+        byte[] buffer = Encoding.ASCII.GetBytes(serializedData);
+
+        foreach (var client in connectedClients)
+        {
+            socket.SendTo(buffer, client);
+        }
+        isDebrisFound = true;
+
+    }
+     
+void BroadcastServerPosition()
     {
         if (dynamicServerObject == null)
         {
