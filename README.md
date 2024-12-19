@@ -85,3 +85,11 @@ _**Eric Luque Romero**_
 
 _**Marcel Sunyer Caldú**_
 * **GitHub:** [MarcelSunyer](https://github.com/MarcelSunyer)
+
+#Scene Distribution
+1st - LoadingScene
+2nd - Main_Menu
+3th - JoinServer/LoadServer
+4th - Game_Scene
+5th - TrainStation_Level
+
