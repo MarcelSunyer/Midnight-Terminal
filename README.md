@@ -12,10 +12,10 @@ In *Midnight Terminal*, you and your fellow technicians are dispatched to the de
 
 - 🤝 **Cooperative Multiplayer**: Team up with friends to face the dangers of *Hospitalet Station* together. Effective communication and coordination are essential for survival.
 - 🛠️ **Repair Missions**: Restore and reactivate abandoned trains to open new areas, reestablish tracks, and pave the way for an escape.
-- ⚙️ **Resource Management**: Balance the use of limited tools, weapons, and energy. Choose whether to light up hallways or activate temporary defense systems.
-- 🧟 **Dynamic Mutant AI**: Mutants behave unpredictably due to radiation exposure—some are blind and hunt by sound, while others are fast or block key paths.
+- ⚙️ **Resource Management**: Balance the use of limited tools, weapons, and energy. Choose whether to light up hallways or activate temporary defense systems. (WIP)
+- 🧟 **Dynamic Mutant AI**: Mutants behave unpredictably due to radiation exposure—some are blind and hunt by sound, while others are fast or block key paths. (WIP)
 - ⚡ **Constant Tension**: Random events, like power outages or unexpected noise, increase the pressure and force players to adapt on the fly.
-- 🔫 **Weapon Upgrades**: Purchase weapons throughout the game to improve your odds of survival.
+- 🔫 **Weapon Upgrades**: Purchase weapons throughout the game to improve your odds of survival. (WIP)
 
 ## 🎯 **Player Objectives**
 
@@ -23,7 +23,7 @@ Your primary objectives in *Midnight Terminal* are:
 
 1. 🚂 **Repair the Trains**: Reactivate the engines to access new areas, reconnect tracks, and make the trains operational for evacuation.
 2. 🧟‍♂️ **Survive the Mutants**: Hide, distract, or confront the mutated creatures as you work to complete repairs.
-3. ⚙️ **Manage Resources**: Use your limited tools and weapons wisely. Station power is unreliable, so you'll need to decide whether to light dark corridors or activate defenses.
+3. ⚙️ **Manage Resources**: Use your limited tools and weapons wisely. Station power is unreliable, so you'll need to decide whether to light dark corridors or activate defenses. (WIP)
 
 ## 🧟 **Mutants**
 
@@ -37,7 +37,6 @@ The mutants at *Hospitalet Station* are the result of heavy radiation exposure. 
 
 ## ⚠️ **Tension Mechanics**
 
-- 🎲 **Random Events**: Sudden power failures or the activation of loud automated systems can draw the attention of mutants.
 - 🤜🤛 **Cooperative Interactions**: Some tasks, like aligning train tracks or pushing trains, require teamwork and precise coordination.
 - 🛠️ **Tough Choices**: Decide whether to use tools for immediate progress or save them for crucial moments later in the mission.
 
@@ -53,7 +52,7 @@ The mutants at *Hospitalet Station* are the result of heavy radiation exposure. 
 
 - **WASD** - Move
 - **Mouse** - Look around
-- **E** - Interact (WIP)
+- **E** - Interact
 - **Shift** - Run
 - **Ctrl** - Crouch
 - **F** - Flashlight (WIP)
@@ -62,7 +61,7 @@ The mutants at *Hospitalet Station* are the result of heavy radiation exposure. 
 - **Tab** - Inventory (WIP)
 - **Space** - Jump
 - **Left Mouse Button** - Use Tool/Attack (WIP)
-- **Right Mouse Button** - Aim/Defend (WIP)
+- **Right Mouse Button** - Zoom
 
 ## 📖 **Lore**
 
@@ -73,11 +72,3 @@ After a catastrophic failure at the nearby nuclear power plant, *Hospitalet Stat
 - 🏗️ **Alpha Version**: Core mechanics, and multiplayer gameplay.
 - 🔧 **Beta Version**: Advanced AI, resource management, and randomized events.
 - 🚀 **Full Release**: Story mode, additional levels, co-op puzzles, and upgraded weapons.
-
-## 💬 **Support**
-
-For bug reports, suggestions, or feedback, please contact us at **[support@midnightterminal.com](mailto:support@midnightterminal.com)**.
-
-## 🤝 **Contribute**
-
-Interested in contributing to *Midnight Terminal*? Feel free to fork the project, make changes, and submit a pull request.
