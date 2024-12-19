@@ -72,3 +72,16 @@ After a catastrophic failure at the nearby nuclear power plant, *Hospitalet Stat
 - 🏗️ **Alpha Version**: Core mechanics, and multiplayer gameplay.
 - 🔧 **Beta Version**: Advanced AI, resource management, and randomized events.
 - 🚀 **Full Release**: Story mode, additional levels, co-op puzzles, and upgraded weapons.
+
+Link to GitHub repo: https://github.com/MarcelSunyer/Midnight-Terminal
+
+#Team Members:
+
+_**Joel Maldonado Salvador**_
+* **GitHub:** [Neffyer](https://github.com/Neffyer)
+
+_**Eric Luque Romero**_
+* **GitHub:** [ericlr1](https://github.com/ericlr1)
+
+_**Marcel Sunyer Caldú**_
+* **GitHub:** [MarcelSunyer](https://github.com/MarcelSunyer)
