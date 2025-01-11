@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 6687710308108566584}
   - component: {fileID: 6687710308108566585}
   - component: {fileID: 1494109384517098543}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player_2
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -103,6 +103,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 683bb7d71ddf4994fa36a47519085055, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lifeRegenDelay: 5
+  lifeRegenRate: 5
+  damageOverlay: {fileID: 0}
+  fadeSpeed: 0.5
+  invincibilityDuration: 1
 --- !u!136 &6687710308108566588
 CapsuleCollider:
   m_ObjectHideFlags: 0
