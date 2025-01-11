@@ -9,6 +9,7 @@ using System;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEditor;
+using System.Linq;
 
 public class ClientUDP : MonoBehaviour
 {
@@ -47,8 +48,16 @@ public class ClientUDP : MonoBehaviour
 
     bool destoryDebris;
 
+    private float heartbeatInterval = 2f;
+    private float nextHeartbeatTime;
+
     void Start()
     {
+        if (serverRepresentationPrefab != null && serverInstance == null)
+        {
+            serverInstance = Instantiate(serverRepresentationPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        }
+        DontDestroyOnLoad(serverInstance);
         playerName = PlayerPrefs.HasKey("Join_Server_Name") ? PlayerPrefs.GetString("Join_Server_Name") : "No hay texto guardado";
         general_chat = GameObject.Find("GeneralChat");
         chatPanel = GameObject.Find("ChatPanel");
@@ -154,6 +163,11 @@ public class ClientUDP : MonoBehaviour
             destoryDebris = false;
         }
         SendPlayerPosition();
+        if (Time.time >= nextHeartbeatTime)
+        {
+            SendHeartbeat();
+            nextHeartbeatTime = Time.time + heartbeatInterval;
+        }
     }
 
     void SendPlayerPosition()
@@ -172,7 +186,26 @@ public class ClientUDP : MonoBehaviour
             lastRotation = currentRotation;
         }
     }
+    void SendHeartbeat()
+    {
+        SendMessageToServer("HEARTBEAT:");
+    }
 
+    // Función para manejar la desconexión de un cliente
+    void HandleDisconnect(string clientID)
+    {
+        // Busca el prefab asociado al ID del cliente desconectado
+        if (clientInstances.TryGetValue(clientID, out GameObject clientPrefab))
+        {
+            Destroy(clientPrefab); // Elimina el prefab
+            clientInstances.Remove(clientID); // Remueve del diccionario
+            Debug.Log($"Cliente desconectado y prefab eliminado: {clientID}");
+        }
+        else
+        {
+            Debug.LogWarning($"No se encontró prefab para cliente desconectado: {clientID}");
+        }
+    }
     void Receive()
     {
         byte[] data = new byte[1024];
@@ -183,10 +216,15 @@ public class ClientUDP : MonoBehaviour
             int recv = socket.ReceiveFrom(data, ref remoteEndPoint);
             string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
+            if (receivedMessage.StartsWith("DISCONNECT:"))
+            {
+                HandleDisconnect(receivedMessage.Substring(11));
+            }
             if (receivedMessage.StartsWith("NEWCLIENT:"))
             {
                 HandleNewClient(receivedMessage.Substring(10));
             }
+
             else if (receivedMessage.StartsWith("POSCIENTS:"))
             {
                 HandlePositionUpdate(receivedMessage.Substring(10));
@@ -311,6 +349,14 @@ public class ClientUDP : MonoBehaviour
 
     void UpdateServerPosition(Position data)
     {
+        // Instancia el servidor si aún no se ha creado
+        if (serverInstance == null && serverRepresentationPrefab != null)
+        {
+            serverInstance = Instantiate(serverRepresentationPrefab, new Vector3(data.x, data.y, data.z), Quaternion.identity);
+            Debug.Log("Instancia del servidor creada en el cliente.");
+        }
+
+        // Actualiza la posición y rotación del servidor
         if (serverInstance != null)
         {
             serverInstance.transform.position = new Vector3(data.x, data.y, data.z);
@@ -318,7 +364,7 @@ public class ClientUDP : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Server instance is null; cannot update position and rotation.");
+            Debug.LogWarning("No se pudo actualizar la posición porque el servidor no tiene una instancia.");
         }
     }
 

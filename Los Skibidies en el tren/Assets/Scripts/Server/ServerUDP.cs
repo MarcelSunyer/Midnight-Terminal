@@ -8,6 +8,7 @@ using System.Threading;
 using System.Collections.Concurrent;
 using System;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class ServerUDP : MonoBehaviour
 {
@@ -38,6 +39,10 @@ public class ServerUDP : MonoBehaviour
 
     private Dictionary<EndPoint, GameObject> clientPlayerInstances = new Dictionary<EndPoint, GameObject>();
     private Queue<System.Action> mainThreadActions = new Queue<System.Action>();
+
+    private Dictionary<EndPoint, float> clientLastHeartbeat = new Dictionary<EndPoint, float>();
+    private const float heartbeatTimeout = 5f;
+
 
     private int clientIDCounter = 0;
     private Dictionary<EndPoint, int> clientIDs = new Dictionary<EndPoint, int>();
@@ -97,6 +102,8 @@ public class ServerUDP : MonoBehaviour
                 interactionManager.OnSceneLoaded += HandleSceneLoaded;
             }
         }
+
+        CheckForHeartbeatTimeouts();
         // Procesa todas las acciones encoladas para el hilo principal
         while (mainThreadActions.Count > 0)
         {
@@ -124,6 +131,44 @@ public class ServerUDP : MonoBehaviour
 
         BroadcastServerPosition();
     }
+
+    void CheckForHeartbeatTimeouts()
+    {
+        float currentTime = Time.time;
+
+        foreach (var client in clientLastHeartbeat.Keys.ToArray())
+        {
+            if (currentTime - clientLastHeartbeat[client] > heartbeatTimeout)
+            {
+                Debug.Log($"Cliente inactivo detectado: {client}. Eliminando...");
+                RemoveClient(client);
+            }
+        }
+    }
+    void RemoveClient(EndPoint clientEndpoint)
+    {
+        if (connectedClients.Remove(clientEndpoint))
+        {
+            if (clientPlayerInstances.TryGetValue(clientEndpoint, out GameObject clientPrefab))
+            {
+                // Encolar la acción para el hilo principal
+                mainThreadActions.Enqueue(() =>
+                {
+                    Destroy(clientPrefab);
+                    clientPlayerInstances.Remove(clientEndpoint);
+                });
+            }
+
+            if (clientIDs.TryGetValue(clientEndpoint, out int clientID))
+            {
+                BroadcastMessage($"DISCONNECT:{clientID}", null); // Informar a los demás clientes
+                clientIDs.Remove(clientEndpoint);
+            }
+
+            clientLastHeartbeat.Remove(clientEndpoint);
+            Debug.Log($"Cliente desconectado: {clientEndpoint}");
+        }
+    }
     void Receive()
     {
         byte[] data = new byte[1024];
@@ -131,53 +176,88 @@ public class ServerUDP : MonoBehaviour
 
         while (true)
         {
-            int recv = socket.ReceiveFrom(data, ref remoteClient);
-            string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
-
-            // Validar si el cliente es nuevo
-            if (!connectedClients.Contains(remoteClient))
+            try
             {
-                connectedClients.Add(remoteClient);
-                mainThreadActions.Enqueue(() => AddClient(remoteClient));
-            }
-            if(receivedMessage.StartsWith("DEBRISDESTROYED:"))
-            {
-                can_be_destroyed = true;
-                DebrisDestroyed();
+                int recv = socket.ReceiveFrom(data, ref remoteClient);
+                string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
-            }
-            // Manejar mensajes de posición
-            if (receivedMessage.StartsWith("POS:"))
-            {
-                string positionDataStr = receivedMessage.Substring(4);
-
-                // Manejo seguro de datos
-                if (Position.TryDeserialize(positionDataStr, out Position positionData))
+                if (receivedMessage == "CAN_JOIN")
                 {
-                    mainThreadActions.Enqueue(() =>
+                    string response = connectedClients.Count < 2 ? "OK" : "FULL";
+                    byte[] responseData = Encoding.ASCII.GetBytes(response);
+                    socket.SendTo(responseData, remoteClient);
+                }
+                else if (receivedMessage.StartsWith("HEARTBEAT:"))
+                {
+                    if (!clientLastHeartbeat.ContainsKey(remoteClient))
                     {
-                        if (clientPlayerInstances.ContainsKey(remoteClient))
-                        {
-                            var clientObject = clientPlayerInstances[remoteClient];
-                            clientObject.transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
-                            clientObject.transform.rotation = new Quaternion(positionData.rotX, positionData.rotY, positionData.rotZ, positionData.rotW);
-                        }
-                    });
+                        Debug.LogWarning($"HEARTBEAT recibido de cliente no registrado: {remoteClient}");
+                        continue;
+                    }
 
-                    // Transmitir posición a otros clientes
-                    mainThreadActions.Enqueue(() => BroadcastPosition(positionData, remoteClient));
+                    clientLastHeartbeat[remoteClient] = Time.time;
+                }
+                else if (!connectedClients.Contains(remoteClient))
+                {
+                    if (connectedClients.Count < 2)
+                    {
+                        connectedClients.Add(remoteClient);
+                        mainThreadActions.Enqueue(() => AddClient(remoteClient));
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Cliente intentó conectarse, pero el servidor está lleno.");
+                    }
+                }
+                else if (receivedMessage.StartsWith("DEBRISDESTROYED:"))
+                {
+                    can_be_destroyed = true;
+                    DebrisDestroyed();
+                }
+                else if (receivedMessage.StartsWith("POS:"))
+                {
+                    string positionDataStr = receivedMessage.Substring(4);
+                    if (Position.TryDeserialize(positionDataStr, out Position positionData))
+                    {
+                        mainThreadActions.Enqueue(() =>
+                        {
+                            if (clientPlayerInstances.ContainsKey(remoteClient))
+                            {
+                                var clientObject = clientPlayerInstances[remoteClient];
+                                clientObject.transform.position = new Vector3(positionData.x, positionData.y, positionData.z);
+                                clientObject.transform.rotation = new Quaternion(positionData.rotX, positionData.rotY, positionData.rotZ, positionData.rotW);
+                            }
+                        });
+
+                        mainThreadActions.Enqueue(() => BroadcastPosition(positionData, remoteClient));
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Datos de posición malformados recibidos de {remoteClient}");
+                    }
                 }
                 else
                 {
-                    Debug.LogWarning($"Datos de posición malformados recibidos de {remoteClient}");
+                    messageQueue.Enqueue(receivedMessage);
+                    mainThreadActions.Enqueue(() => BroadcastMessage(receivedMessage, remoteClient));
                 }
             }
-            else
+            catch (SocketException ex)
             {
-                // Otros tipos de mensajes
-                messageQueue.Enqueue(receivedMessage);
-                mainThreadActions.Enqueue(() => BroadcastMessage(receivedMessage, remoteClient));
+                HandleClientDisconnection(remoteClient); // Maneja la desconexión
             }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error general en Receive: {ex.Message}");
+            }
+        }
+    }
+    void HandleClientDisconnection(EndPoint remoteClient)
+    {
+        if (connectedClients.Contains(remoteClient))
+        {
+            Debug.Log($"El cliente {remoteClient} se ha desconectado abruptamente.");
+            RemoveClient(remoteClient); // Elimina el cliente desconectado
         }
     }
 
