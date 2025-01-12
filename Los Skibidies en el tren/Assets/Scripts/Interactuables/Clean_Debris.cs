@@ -127,8 +127,7 @@ public class Clean_Debris : MonoBehaviour, IInteractable
     public void DestroyDebris()
     {
         isDebrisDestroyed = true;
-        Debug.Log("Jodieeenda");
-        StopAudio(); // Detener el audio al completar
+        StopAudio();
         Destroy(transform.parent.gameObject);
     }
 }
