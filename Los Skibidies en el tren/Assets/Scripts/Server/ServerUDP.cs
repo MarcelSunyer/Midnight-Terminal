@@ -55,6 +55,8 @@ public class ServerUDP : MonoBehaviour
     bool isSceneLoaded;
     bool isDebrisFound = false;
     bool can_be_destroyed;
+
+    int can_join = 0;
     void Start()
     {
         player_name = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
@@ -161,7 +163,16 @@ public class ServerUDP : MonoBehaviour
 
             if (clientIDs.TryGetValue(clientEndpoint, out int clientID))
             {
-                BroadcastMessage($"DISCONNECT:{clientID}", null); // Informar a los demás clientes
+                // Informar a los demás clientes sobre el cliente desconectado
+                string disconnectMessage = $"DISCONNECTED:{clientID}";
+                byte[] data = Encoding.ASCII.GetBytes(disconnectMessage);
+
+                // Iterar sobre los clientes conectados y enviar el mensaje
+                foreach (var client in connectedClients)
+                {
+                    socket.SendTo(data, client);
+                }
+
                 clientIDs.Remove(clientEndpoint);
             }
 
@@ -169,6 +180,7 @@ public class ServerUDP : MonoBehaviour
             Debug.Log($"Cliente desconectado: {clientEndpoint}");
         }
     }
+
     void Receive()
     {
         byte[] data = new byte[1024];
@@ -183,7 +195,7 @@ public class ServerUDP : MonoBehaviour
 
                 if (receivedMessage == "CAN_JOIN")
                 {
-                    string response = connectedClients.Count < 2 ? "OK" : "FULL";
+                    string response = can_join < 2 ? "OK" : "FULL";
                     byte[] responseData = Encoding.ASCII.GetBytes(response);
                     socket.SendTo(responseData, remoteClient);
                 }
@@ -197,12 +209,13 @@ public class ServerUDP : MonoBehaviour
 
                     clientLastHeartbeat[remoteClient] = Time.time;
                 }
-                else if (!connectedClients.Contains(remoteClient))
+                if (!connectedClients.Contains(remoteClient))
                 {
-                    if (connectedClients.Count < 2)
+                    if (can_join <= 2)
                     {
                         connectedClients.Add(remoteClient);
                         mainThreadActions.Enqueue(() => AddClient(remoteClient));
+                        can_join += 1;
                     }
                     else
                     {
@@ -307,30 +320,33 @@ void BroadcastServerPosition()
     {
         mainThreadActions.Enqueue(() =>
         {
-            if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
+            if (can_join <= 2)
             {
-                // Asignar un ID único al cliente
-                int newClientID = clientIDCounter++;
-                clientIDs[clientEndpoint] = newClientID;
-
-                // Instanciar un nuevo objeto para el cliente
-                var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
-                clientPlayerInstances[clientEndpoint] = newClientInstance;
-
-                // Transmitir el ID del cliente al cliente respectivo
-
-                string newClientMessage = $"NEWCLIENT:{newClientID}:{clientEndpoint}";
-                             
-                byte[] buffer = Encoding.ASCII.GetBytes(newClientMessage);
-
-                foreach (var client in connectedClients)
+                if (serverObject != null && !clientPlayerInstances.ContainsKey(clientEndpoint))
                 {
-                    socket.SendTo(buffer, client);
-                }
-                // Enviar información de otros clientes a este nuevo cliente
-                //BroadcastAllClientsData(clientEndpoint);
+                    // Asignar un ID único al cliente
+                    int newClientID = clientIDCounter++;
+                    clientIDs[clientEndpoint] = newClientID;
 
-                Debug.Log($"Nuevo cliente añadido: {clientEndpoint} con ID: {newClientID}");
+                    // Instanciar un nuevo objeto para el cliente
+                    var newClientInstance = Instantiate(serverObject, new Vector3(0, 1, 0), Quaternion.identity);
+                    clientPlayerInstances[clientEndpoint] = newClientInstance;
+
+                    // Transmitir el ID del cliente al cliente respectivo
+
+                    string newClientMessage = $"NEWCLIENT:{newClientID}:{clientEndpoint}";
+
+                    byte[] buffer = Encoding.ASCII.GetBytes(newClientMessage);
+
+                    foreach (var client in connectedClients)
+                    {
+                        socket.SendTo(buffer, client);
+                    }
+                    // Enviar información de otros clientes a este nuevo cliente
+                    //BroadcastAllClientsData(clientEndpoint);
+
+                    Debug.Log($"Nuevo cliente añadido: {clientEndpoint} con ID: {newClientID}");
+                }
             }
         });
     }

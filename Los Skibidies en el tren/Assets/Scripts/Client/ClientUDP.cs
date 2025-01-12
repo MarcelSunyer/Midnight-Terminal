@@ -81,6 +81,7 @@ public class ClientUDP : MonoBehaviour
 
     void Update()
     {
+        
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
             clean_Debris = FindObjectOfType<Clean_Debris>();
@@ -190,22 +191,6 @@ public class ClientUDP : MonoBehaviour
     {
         SendMessageToServer("HEARTBEAT:");
     }
-
-    // Función para manejar la desconexión de un cliente
-    void HandleDisconnect(string clientID)
-    {
-        // Busca el prefab asociado al ID del cliente desconectado
-        if (clientInstances.TryGetValue(clientID, out GameObject clientPrefab))
-        {
-            Destroy(clientPrefab); // Elimina el prefab
-            clientInstances.Remove(clientID); // Remueve del diccionario
-            Debug.Log($"Cliente desconectado y prefab eliminado: {clientID}");
-        }
-        else
-        {
-            Debug.LogWarning($"No se encontró prefab para cliente desconectado: {clientID}");
-        }
-    }
     void Receive()
     {
         byte[] data = new byte[1024];
@@ -216,10 +201,6 @@ public class ClientUDP : MonoBehaviour
             int recv = socket.ReceiveFrom(data, ref remoteEndPoint);
             string receivedMessage = Encoding.ASCII.GetString(data, 0, recv);
 
-            if (receivedMessage.StartsWith("DISCONNECT:"))
-            {
-                HandleDisconnect(receivedMessage.Substring(11));
-            }
             if (receivedMessage.StartsWith("NEWCLIENT:"))
             {
                 HandleNewClient(receivedMessage.Substring(10));
@@ -292,6 +273,7 @@ public class ClientUDP : MonoBehaviour
                         if (!clientInstances.ContainsKey(instanceKey))
                         {
                             GameObject newClientInstance = Instantiate(clientPrefab, Vector3.zero, Quaternion.identity);
+                            Debug.Log("Skibidis en el toilet");
                             clientInstances[instanceKey] = newClientInstance;
                             DontDestroyOnLoad(clientInstances[instanceKey]);
                             Debug.Log($"Cliente añadido: ID={id}, Endpoint={clientEndpoint}");
