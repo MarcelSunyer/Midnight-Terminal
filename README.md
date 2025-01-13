@@ -12,18 +12,15 @@ In *Midnight Terminal*, you and your fellow technicians are dispatched to the de
 
 - 🤝 **Cooperative Multiplayer**: Team up with friends to face the dangers of *Hospitalet Station* together. Effective communication and coordination are essential for survival.
 - 🛠️ **Repair Missions**: Restore and reactivate abandoned trains to open new areas, reestablish tracks, and pave the way for an escape.
-- ⚙️ **Resource Management**: Balance the use of limited tools, weapons, and energy. Choose whether to light up hallways or activate temporary defense systems. (WIP)
-- 🧟 **Dynamic Mutant AI**: Mutants behave unpredictably due to radiation exposure—some are blind and hunt by sound, while others are fast or block key paths. (WIP)
+- 🧟 **Dynamic Mutant AI**: Mutants behave unpredictably due to radiation exposure—some are blind and hunt by sound, while others are fast or block key paths.
 - ⚡ **Constant Tension**: Random events, like power outages or unexpected noise, increase the pressure and force players to adapt on the fly.
-- 🔫 **Weapon Upgrades**: Purchase weapons throughout the game to improve your odds of survival. (WIP)
-
+  
 ## 🎯 **Player Objectives**
 
 Your primary objectives in *Midnight Terminal* are:
 
-1. 🚂 **Repair the Trains**: Reactivate the engines to access new areas, reconnect tracks, and make the trains operational for evacuation.
-2. 🧟‍♂️ **Survive the Mutants**: Hide, distract, or confront the mutated creatures as you work to complete repairs.
-3. ⚙️ **Manage Resources**: Use your limited tools and weapons wisely. Station power is unreliable, so you'll need to decide whether to light dark corridors or activate defenses. (WIP)
+1. 🚂 **Repair the Trains**: Clean debris and restore  power supply. 
+2. 🧟‍♂️ **Survive the Mutants**: Hide and distract the mutated creatures as you work to complete repairs.
 
 ## 🧟 **Mutants**
 
@@ -33,20 +30,13 @@ The mutants at *Hospitalet Station* are the result of heavy radiation exposure. 
   - Some are **blind** and navigate by sound, requiring stealth.
   - Others are **extremely fast**, forcing you to move strategically.
   - A few can **block specific routes**, creating obstacles.
-- ⏳ **Dynamic Threat**: The longer you stay in the station, the more mutants appear, escalating the difficulty and tension.
-
-## ⚠️ **Tension Mechanics**
-
-- 🤜🤛 **Cooperative Interactions**: Some tasks, like aligning train tracks or pushing trains, require teamwork and precise coordination.
-- 🛠️ **Tough Choices**: Decide whether to use tools for immediate progress or save them for crucial moments later in the mission.
 
 ## 📋 **How to Play**
 
-1. 👥 **Form a Team**: Join with friends or play solo with AI partners.
-2. 🚉 **Explore the Station**: Identify damaged trains and plan repairs.
-3. 🧰 **Gather and Manage Resources**: Tools, weapons, and power are limited—use them wisely.
-4. 🛠️ **Complete Repair Tasks**: Fix trains, activate systems, and open new areas.
-5. 🧟‍♂️ **Avoid or Confront Mutants**: Use stealth or fight back as needed, but remember—the longer you stay, the more dangerous it gets.
+1. 👥 **Form a Team**: Join with friends and survive in the station.
+2. 🚉 **Explore the Station**: Identify damaged tracks and power supply and plan repairs.
+3. 🛠️ **Complete Repair Tasks**: Fix trains, activate systems, and open new areas.
+4. 🧟‍♂️ **Avoid Mutants**: Use stealth to avoid the mutants.
 
 ## 🎮 **Controls**
 
@@ -55,12 +45,8 @@ The mutants at *Hospitalet Station* are the result of heavy radiation exposure. 
 - **E** - Interact
 - **Shift** - Run
 - **Ctrl** - Crouch
-- **F** - Flashlight (WIP)
 - **T** - Open text
-- **R** - Reload (WIP)
-- **Tab** - Inventory (WIP)
 - **Space** - Jump
-- **Left Mouse Button** - Use Tool/Attack (WIP)
 - **Right Mouse Button** - Zoom
 
 ## 📖 **Lore**
@@ -70,8 +56,8 @@ After a catastrophic failure at the nearby nuclear power plant, *Hospitalet Stat
 ## 🗺️ **Development Roadmap**
 
 - 🏗️ **Alpha Version**: Core mechanics, and multiplayer gameplay.
-- 🔧 **Beta Version**: Advanced AI, resource management, and randomized events.
-- 🚀 **Full Release**: Story mode, additional levels, co-op puzzles, and upgraded weapons.
+- 🔧 **Beta Version**: Advanced AI and repair events.
+- 🚀 **Full Release**: IA improvment and 3 player teams.
 
 Link to GitHub repo: https://github.com/MarcelSunyer/Midnight-Terminal
 
