@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,13 +37,6 @@ public class PlayerHandler : MonoBehaviour
         if (damageOverlay != null && damageOverlay.color.a > 0)
         {
             damageOverlay.color = new Color(1, 0, 0, Mathf.Max(0, damageOverlay.color.a - Time.deltaTime * fadeSpeed));
-        }
-
-        //Debug key to reset the player position if any problem was detected
-        if (Input.GetKeyDown(KeyCode.F1)) 
-        {
-            life = maxLife;
-            transform.position = new Vector3(0, 5, 0);
         }
 
     }
@@ -84,5 +78,13 @@ public class PlayerHandler : MonoBehaviour
     {
         yield return new WaitForSeconds(invincibilityDuration);
         isInvincible = false;
+    }
+
+
+    //---PUBLIC FUCTIONS---
+    public void Respawn()
+    {
+        life = maxLife;
+        transform.position = new Vector3(0, 5, 0);
     }
 }
