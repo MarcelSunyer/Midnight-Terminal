@@ -496,6 +496,8 @@ MonoBehaviour:
   holdTime: 2.5
   cleaningAudio: {fileID: 8300000, guid: a5cc24bb60d9ed3458d11fba071adfb5, type: 3}
   isDebrisDestroyed: 0
+  progress_bar: {fileID: 0}
+  points: 3
 --- !u!82 &2694095379815124641
 AudioSource:
   m_ObjectHideFlags: 0

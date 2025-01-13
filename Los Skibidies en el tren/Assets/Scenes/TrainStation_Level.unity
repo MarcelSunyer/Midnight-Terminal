@@ -5408,6 +5408,39 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.04000001, y: 0.0020000027, z: 0.010000003}
   m_Center: {x: 0, y: -0.000000002386514, z: -0.000000014901161}
+--- !u!1 &899090998
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 899090999}
+  m_Layer: 0
+  m_Name: Electric
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &899090999
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 899090998}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1994724704}
+  - {fileID: 1604826261}
+  m_Father: {fileID: 1417975104}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &899305112
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5749,11 +5782,15 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 899090999}
     m_Modifications:
     - target: {fileID: 1749533654301663254, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_Name
       value: ElextricBox
+      objectReference: {fileID: 0}
+    - target: {fileID: 6196405817568074808, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
+      propertyPath: points
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalScale.x
@@ -5785,7 +5822,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalRotation.y
@@ -5793,7 +5830,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -8061,6 +8098,7 @@ Transform:
   m_Children:
   - {fileID: 1307236470}
   - {fileID: 1296051555}
+  - {fileID: 899090999}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1431173043
@@ -9699,6 +9737,11 @@ MeshCollider:
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 51151822a196f3c44ac29a4c42db1329, type: 3}
   m_PrefabInstance: {fileID: 1594876231}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1604826261 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
+  m_PrefabInstance: {fileID: 1915136225}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1611288626
 PrefabInstance:
@@ -12072,15 +12115,19 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 899090999}
     m_Modifications:
     - target: {fileID: 1749533654301663254, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_Name
       value: ElextricBox (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 6196405817568074808, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
+      propertyPath: points
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.1503
+      value: 1.1503001
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalScale.y
@@ -12088,7 +12135,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.1503
+      value: 1.1503001
       objectReference: {fileID: 0}
     - target: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -12520,6 +12567,11 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 145.8375, y: 8.417942, z: 3.3468704}
   m_Center: {x: -2.6644402, y: 12.733564, z: -18.478985}
+--- !u!4 &1994724704 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8574853399045370505, guid: 99e5130789b8e6941a71bbce617b008d, type: 3}
+  m_PrefabInstance: {fileID: 931315438}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1997519739
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14048,5 +14100,3 @@ SceneRoots:
   - {fileID: 1584591516}
   - {fileID: 621658854}
   - {fileID: 1417975104}
-  - {fileID: 931315438}
-  - {fileID: 1915136225}
