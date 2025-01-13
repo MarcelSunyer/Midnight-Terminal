@@ -64,8 +64,6 @@ public class ServerUDP : MonoBehaviour
 
     int can_join = 0;
 
-    private GameObject end_game;
-
     GameObject minijuegos;
     void Start()
     {
@@ -88,7 +86,7 @@ public class ServerUDP : MonoBehaviour
 
         interactionObject = GameObject.Find("Boton");
 
-        
+        minijuegos = GameObject.Find("-----Minigames-----");
 
     }
 
@@ -103,7 +101,6 @@ public class ServerUDP : MonoBehaviour
             isTrainLoaded = true;
             if (minijuegos != null)
             {
-                end_game = GameObject.Find("Go_Home");
                 // Asegúrate de que tiene al menos 3 hijos
                 int childCount = minijuegos.transform.childCount;
                 if (childCount >= 3)
@@ -121,10 +118,6 @@ public class ServerUDP : MonoBehaviour
                     Debug.Log($"Hijo activo: {minijuegos.transform.GetChild(activeIndex).name}");
                 }
 
-            }
-            if (progressBar.act <= 100)
-            {
-                end_game.SetActive(true);
             }
             if (can_be_destroyed)
             {
