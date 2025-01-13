@@ -63,6 +63,10 @@ public class ServerUDP : MonoBehaviour
     private float _lastSentProgress = 0;
 
     int can_join = 0;
+
+    private GameObject minijuegos;
+
+    bool sceneTrain = false;
     void Start()
     {
         progressBar.act = 0;
@@ -70,7 +74,7 @@ public class ServerUDP : MonoBehaviour
         general_chat = GameObject.Find("GeneralChat");
         chatPanel = GameObject.Find("ChatPanel");
         chatbox = GameObject.FindObjectOfType<InputField>();
-
+        
         general_chat.SetActive(false);
 
         IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
@@ -92,8 +96,29 @@ public class ServerUDP : MonoBehaviour
         Debug.Log(progressBar.act.ToString());
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
+            if (sceneTrain == false)
+            {
+                sceneTrain = true;
+                minijuegos = GameObject.Find("-----Minigames-----");
+                int childCount = minijuegos.transform.childCount;
+                if (childCount >= 3)
+                {
+                    // Elige un índice aleatorio para el hijo que permanecerá activo
+                    int activeIndex = UnityEngine.Random.Range(0, childCount);
+
+                    for (int i = 0; i < childCount; i++)
+                    {
+                        GameObject child = minijuegos.transform.GetChild(i).gameObject;
+                        // Desactiva todos los hijos excepto el seleccionado
+                        child.SetActive(i == activeIndex);
+                    }
+
+                    Debug.Log($"Hijo activo: {minijuegos.transform.GetChild(activeIndex).name}");
+                }
+            }
             clean_Debris = FindObjectOfType<Clean_Debris>();
             isDebrisFound = true;
+
 
         }
         if (clean_Debris == null && isDebrisFound)

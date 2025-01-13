@@ -53,8 +53,11 @@ public class ClientUDP : MonoBehaviour
     private float nextHeartbeatTime;
 
     public Progress_bar progressBar;
+    private GameObject minigames;
 
     private float lastSentProgress; // Inicializa con un valor que no sea válido
+
+    bool isSceneTrain = false;
     void Start()
     {
         
@@ -89,17 +92,35 @@ public class ClientUDP : MonoBehaviour
     {
         SendProgressToTheServer(progressBar.act);
 
-
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
             clean_Debris = FindObjectOfType<Clean_Debris>();
             isDebrisFound = true;
 
+            if (isSceneTrain == false)
+            {
+                minigames = GameObject.Find("-----Minigames-----");
+                isSceneTrain = true;
+                int childCount = minigames.transform.childCount;
+                if (childCount >= 3)
+                {
+                    // Elige un índice aleatorio para el hijo que permanecerá activo
+                    int activeIndex = UnityEngine.Random.Range(0, childCount);
+
+                    for (int i = 0; i < childCount; i++)
+                    {
+                        GameObject child = minigames.transform.GetChild(i).gameObject;
+                        // Desactiva todos los hijos excepto el seleccionado
+                        child.SetActive(i == activeIndex);
+                    }
+
+                    Debug.Log($"Hijo activo: {minigames.transform.GetChild(activeIndex).name}");
+                }
+            }
         }
         if (clean_Debris == null && isDebrisFound)
         {
             DebrisDestroyed();
-
         }
 
 
