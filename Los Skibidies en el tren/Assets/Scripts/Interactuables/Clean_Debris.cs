@@ -16,6 +16,7 @@ public class Clean_Debris : MonoBehaviour, IInteractable
     public bool isDebrisDestroyed = false;
 
     public Progress_bar progress_bar;
+    public float points;
     private void Start()
     {
         GameObject sliderBarObject = GameObject.Find("Slider_Bar");
@@ -134,7 +135,7 @@ public class Clean_Debris : MonoBehaviour, IInteractable
 
     public void DestroyDebris()
     {
-        progress_bar.act += 5f;
+        progress_bar.act += points;
         isDebrisDestroyed = true;
         StopAudio();
         Destroy(transform.parent.gameObject);
