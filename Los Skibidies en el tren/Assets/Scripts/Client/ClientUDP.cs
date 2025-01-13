@@ -55,6 +55,8 @@ public class ClientUDP : MonoBehaviour
     public Progress_bar progressBar;
     private GameObject minijuegos;
     private float lastSentProgress; // Inicializa con un valor que no sea válido
+
+    private GameObject endgame;
     void Start()
     {
         
@@ -83,6 +85,7 @@ public class ClientUDP : MonoBehaviour
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
         lastSentProgress = progressBar.act;
+
     }
 
     void Update()
@@ -96,34 +99,38 @@ public class ClientUDP : MonoBehaviour
             clean_Debris = FindObjectOfType<Clean_Debris>();
             isDebrisFound = true;
             isTrainLoaded = true;
+            if (minijuegos != null)
+            {
+                endgame = GameObject.Find("Go_Home");
+                // Asegúrate de que tiene al menos 3 hijos
+                int childCount = minijuegos.transform.childCount;
+                if (childCount >= 3)
+                {
+                    // Elige un índice aleatorio para el hijo que permanecerá activo
+                    int activeIndex = UnityEngine.Random.Range(0, childCount);
 
+                    for (int i = 0; i < childCount; i++)
+                    {
+                        GameObject child = minijuegos.transform.GetChild(i).gameObject;
+                        // Desactiva todos los hijos excepto el seleccionado
+                        child.SetActive(i == activeIndex);
+                    }
+
+                    Debug.Log($"Hijo activo: {minijuegos.transform.GetChild(activeIndex).name}");
+                }
+
+            }
         }
         if (clean_Debris == null && isDebrisFound)
         {
             DebrisDestroyed();
 
         }
-        if (minijuegos != null)
+
+        if (progressBar.act <= 100)
         {
-            // Asegúrate de que tiene al menos 3 hijos
-            int childCount = minijuegos.transform.childCount;
-            if (childCount >= 3)
-            {
-                // Elige un índice aleatorio para el hijo que permanecerá activo
-                int activeIndex = UnityEngine.Random.Range(0, childCount);
-
-                for (int i = 0; i < childCount; i++)
-                {
-                    GameObject child = minijuegos.transform.GetChild(i).gameObject;
-                    // Desactiva todos los hijos excepto el seleccionado
-                    child.SetActive(i == activeIndex);
-                }
-
-                Debug.Log($"Hijo activo: {minijuegos.transform.GetChild(activeIndex).name}");
-            }
-
+            endgame.SetActive(true);
         }
-
 
         if (shouldTeleport)
         {
