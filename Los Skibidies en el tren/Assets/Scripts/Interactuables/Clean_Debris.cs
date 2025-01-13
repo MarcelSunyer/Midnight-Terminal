@@ -1,19 +1,23 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Clean_Debris : MonoBehaviour, IInteractable
 {
-    public float holdTime = 3f;         // Tiempo necesario para limpiar el objeto
-    private float holdCounter = 0f;    // Contador del tiempo de pulsación
-    private bool isHolding = false;    // Indica si el jugador está manteniendo la tecla
-    private Vector3 originalScale;     // Tamaño original del objeto
+    public float holdTime = 3f;       
+    private float holdCounter = 0f;   
+    private bool isHolding = false;  
+    private Vector3 originalScale;    
 
     // Audio
-    public AudioClip cleaningAudio;    // Clip de audio para el proceso de limpieza
-    private AudioSource audioSource;   // Componente AudioSource
+    public AudioClip cleaningAudio;   
+    private AudioSource audioSource;   
 
     public bool isDebrisDestroyed = false;
 
+    public GameObject task_complete;
+
+    public Progress_bar progress_bar;
     private void Start()
     {
         // Guarda el tamaño original del objeto
@@ -29,7 +33,6 @@ public class Clean_Debris : MonoBehaviour, IInteractable
 
     private void Update()
     {
-        // Comprueba si el jugador está intentando moverse
         if (IsPlayerMoving())
         {
             if (isHolding)
@@ -126,6 +129,7 @@ public class Clean_Debris : MonoBehaviour, IInteractable
 
     public void DestroyDebris()
     {
+        progress_bar.act += 5f;
         isDebrisDestroyed = true;
         StopAudio();
         Destroy(transform.parent.gameObject);
