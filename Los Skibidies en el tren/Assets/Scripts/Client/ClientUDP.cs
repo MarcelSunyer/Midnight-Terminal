@@ -44,7 +44,7 @@ public class ClientUDP : MonoBehaviour
 
     private Clean_Debris clean_Debris;
     bool isSceneLoaded;
-
+    bool isTrainLoaded = false;
     bool isDebrisFound = false;
 
     bool destoryDebris;
@@ -53,7 +53,7 @@ public class ClientUDP : MonoBehaviour
     private float nextHeartbeatTime;
 
     public Progress_bar progressBar;
-
+    private GameObject minijuegos;
     private float lastSentProgress; // Inicializa con un valor que no sea válido
     void Start()
     {
@@ -89,11 +89,13 @@ public class ClientUDP : MonoBehaviour
     {
         SendProgressToTheServer(progressBar.act);
 
+        minijuegos = GameObject.Find("-----Minigames-----");
 
-        if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
+        if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null && isTrainLoaded == false)
         {
             clean_Debris = FindObjectOfType<Clean_Debris>();
             isDebrisFound = true;
+            isTrainLoaded = true;
 
         }
         if (clean_Debris == null && isDebrisFound)
@@ -101,9 +103,28 @@ public class ClientUDP : MonoBehaviour
             DebrisDestroyed();
 
         }
+        if (minijuegos != null)
+        {
+            // Asegúrate de que tiene al menos 3 hijos
+            int childCount = minijuegos.transform.childCount;
+            if (childCount >= 3)
+            {
+                // Elige un índice aleatorio para el hijo que permanecerá activo
+                int activeIndex = UnityEngine.Random.Range(0, childCount);
+
+                for (int i = 0; i < childCount; i++)
+                {
+                    GameObject child = minijuegos.transform.GetChild(i).gameObject;
+                    // Desactiva todos los hijos excepto el seleccionado
+                    child.SetActive(i == activeIndex);
+                }
+
+                Debug.Log($"Hijo activo: {minijuegos.transform.GetChild(activeIndex).name}");
+            }
+
+        }
 
 
-       
         if (shouldTeleport)
         {
             shouldTeleport = false;
@@ -217,8 +238,8 @@ public class ClientUDP : MonoBehaviour
             }
             else if (receivedMessage.StartsWith("UPDATE_PROGRESS:"))
             {
-                string progressValue = receivedMessage.Substring(16); // Obtén el valor después de "UPDATE_PROGRESS:"
-                Debug.Log(progressValue.ToString());
+                string progressValue = receivedMessage.Substring(16);
+                 Debug.Log(progressValue.ToString());
                 mainThreadTasks.Enqueue(() => UpdateProgressBar(progressValue));
             }
             else if (receivedMessage.StartsWith("POSCIENTS:"))
