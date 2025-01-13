@@ -9,6 +9,8 @@ using System.Collections.Concurrent;
 using System;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using System.Collections;
+using Unity.VisualScripting;
 
 public class ServerUDP : MonoBehaviour
 {
@@ -51,14 +53,17 @@ public class ServerUDP : MonoBehaviour
     private StartGame_Button interactionManager;
     private GameObject interactionObject;
 
-    public Clean_Debris clean_Debris;
+    private Clean_Debris clean_Debris;
     bool isSceneLoaded;
     bool isDebrisFound = false;
     bool can_be_destroyed;
 
+    public Progress_bar progressBar;
+
     int can_join = 0;
     void Start()
     {
+        progressBar.act = 0;
         player_name = PlayerPrefs.HasKey("Name_Player") ? PlayerPrefs.GetString("Name_Player") : "No hay texto guardado";
         general_chat = GameObject.Find("GeneralChat");
         chatPanel = GameObject.Find("ChatPanel");
@@ -81,7 +86,8 @@ public class ServerUDP : MonoBehaviour
 
     void Update()
     {
-        if(isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
+        Debug.Log(progressBar.act.ToString());
+        if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
             clean_Debris = FindObjectOfType<Clean_Debris>();
             isDebrisFound = true;
@@ -199,6 +205,11 @@ public class ServerUDP : MonoBehaviour
                     byte[] responseData = Encoding.ASCII.GetBytes(response);
                     socket.SendTo(responseData, remoteClient);
                 }
+                if (receivedMessage.StartsWith("PROGRESS: "))
+                {
+                    string progressValue = receivedMessage.Substring(9); // Obtén el valor después de "PROGRESS:"
+                    BroadcastProgressBarValue(progressValue, remoteClient);
+                }
                 else if (receivedMessage.StartsWith("HEARTBEAT:"))
                 {
                     if (!clientLastHeartbeat.ContainsKey(remoteClient))
@@ -274,6 +285,34 @@ public class ServerUDP : MonoBehaviour
         }
     }
 
+    void BroadcastProgressBarValue(string progressValue, EndPoint sender)
+    {
+        Debug.Log(progressValue);
+        // Convierte progressValue a entero antes de usarlo
+        if (int.TryParse(progressValue, out int progressInt))
+        {
+            // Actualiza el valor de la barra de progreso en el servidor
+            progressBar.act += progressInt;
+
+            // Construye el mensaje para enviar a los demás clientes
+            string message = "UPDATE_PROGRESS:" + progressBar.act;
+
+            byte[] data = Encoding.ASCII.GetBytes(message);
+
+            foreach (var client in connectedClients)
+            {
+                // Envía a todos los clientes excepto al remitente
+                if (!client.Equals(sender))
+                {
+                    socket.SendTo(data, client);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"No se pudo convertir progressValue a int: {progressValue}");
+        }
+    }
     void DebrisDestroyed()
     {
         string serializedData = "DEBRISDESTROYED:";
@@ -287,7 +326,7 @@ public class ServerUDP : MonoBehaviour
 
     }
      
-void BroadcastServerPosition()
+    void BroadcastServerPosition()
     {
         if (dynamicServerObject == null)
         {

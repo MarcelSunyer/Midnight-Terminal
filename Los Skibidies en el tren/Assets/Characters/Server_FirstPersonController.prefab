@@ -127,6 +127,7 @@ MonoBehaviour:
   serverObject: {fileID: 6687710308108566579, guid: 8fe8564de383fc44b9c85ea181deedfb, type: 3}
   dynamicServerObject: {fileID: 6687710308108566579}
   clean_Debris: {fileID: 0}
+  progressBar: {fileID: 8047892751953615944}
 --- !u!1 &4896526341178008160
 GameObject:
   m_ObjectHideFlags: 0
@@ -1456,6 +1457,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7873707103606831678, guid: 27754b69047e8f541924fc197cb0ee3b, type: 3}
   m_PrefabInstance: {fileID: 4641844059579680875}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8047892751953615944 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3442156688589968419, guid: 27754b69047e8f541924fc197cb0ee3b, type: 3}
+  m_PrefabInstance: {fileID: 4641844059579680875}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd7efd0e0c2f08948af34623ff1476b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &9036699527939316650
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -27,4 +27,9 @@ public class Progress_bar : MonoBehaviour
 
     }
 
+    public void SetValue(float value)
+    {
+        act = value; // Ajusta según tu lógica interna
+    }
+
 }

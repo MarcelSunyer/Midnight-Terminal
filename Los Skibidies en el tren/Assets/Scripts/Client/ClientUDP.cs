@@ -10,6 +10,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEditor;
 using System.Linq;
+using UnityEngine.UIElements;
 
 public class ClientUDP : MonoBehaviour
 {
@@ -41,7 +42,7 @@ public class ClientUDP : MonoBehaviour
 
     private bool shouldTeleport = false;
 
-    public Clean_Debris clean_Debris;
+    private Clean_Debris clean_Debris;
     bool isSceneLoaded;
 
     bool isDebrisFound = false;
@@ -51,6 +52,9 @@ public class ClientUDP : MonoBehaviour
     private float heartbeatInterval = 2f;
     private float nextHeartbeatTime;
 
+    public Progress_bar progressBar;
+
+    private float lastSentProgress = -1f; // Inicializa con un valor que no sea válido
     void Start()
     {
         if (serverRepresentationPrefab != null && serverInstance == null)
@@ -81,6 +85,7 @@ public class ClientUDP : MonoBehaviour
 
     void Update()
     {
+        Debug.Log(progressBar.act);
         
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
@@ -93,10 +98,12 @@ public class ClientUDP : MonoBehaviour
             DebrisDestroyed();
 
         }
+        SendProgressBarValue();
 
+       
         if (shouldTeleport)
         {
-            shouldTeleport = false; // Resetea la bandera
+            shouldTeleport = false;
 
             foreach (var client in clientInstances.Values)
             {
@@ -205,7 +212,12 @@ public class ClientUDP : MonoBehaviour
             {
                 HandleNewClient(receivedMessage.Substring(10));
             }
-
+            else if (receivedMessage.StartsWith("UPDATE_PROGRESS:"))
+            {
+                string progressValue = receivedMessage.Substring(17); // Obtén el valor después de "UPDATE_PROGRESS:"
+                Debug.Log(progressValue);
+                mainThreadTasks.Enqueue(() => UpdateProgressBar(float.Parse(progressValue)));
+            }
             else if (receivedMessage.StartsWith("POSCIENTS:"))
             {
                 HandlePositionUpdate(receivedMessage.Substring(10));
@@ -253,6 +265,14 @@ public class ClientUDP : MonoBehaviour
     void DestroyDebris()
     {
         destoryDebris = true;
+    }
+
+    void UpdateProgressBar(float value)
+    {
+        if (progressBar != null) // Asegúrate de tener una referencia al script de la barra
+        {
+            progressBar.act = value;
+        }
     }
     void HandleNewClient(string clientInfo)
     {
@@ -365,7 +385,17 @@ public class ClientUDP : MonoBehaviour
 
     }
 
-
+    void SendProgressBarValue()
+    {
+        // Comprueba si el progreso cambió significativamente (tolerancia del 1%)
+        if (Mathf.Abs(progressBar.act - lastSentProgress) > 0.01f)
+        {
+            string message = "PROGRESS: " + progressBar.act;
+            SendMessageToServer(message);
+            lastSentProgress = progressBar.act; // Actualiza el último valor enviado
+            Debug.Log($"Progreso enviado al servidor: {progressBar.act}");
+        }
+    }
     public void SendMessageToChat(string text, Message.MessageType messageType)
     {
         if (messageList.Count >= maxMessage)

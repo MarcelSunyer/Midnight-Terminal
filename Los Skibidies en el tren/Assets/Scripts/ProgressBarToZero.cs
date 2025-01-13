@@ -10,6 +10,4 @@ public class ProgressBarToZero : MonoBehaviour
     {
         progress_Bar.act = 0;
     }
-
-
 }
