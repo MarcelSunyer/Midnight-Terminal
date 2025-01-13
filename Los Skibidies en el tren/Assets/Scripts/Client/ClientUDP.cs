@@ -58,6 +58,11 @@ public class ClientUDP : MonoBehaviour
     private float lastSentProgress; // Inicializa con un valor que no sea válido
 
     bool isSceneTrain = false;
+
+    bool game_complate = false;
+
+    private GameObject gamecomplate;
+
     void Start()
     {
         
@@ -90,10 +95,16 @@ public class ClientUDP : MonoBehaviour
 
     void Update()
     {
+        if (progressBar.act <= 100)
+        {
+            gamecomplate.SetActive(true);
+        }
+        
         SendProgressToTheServer(progressBar.act);
 
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
+            gamecomplate = GameObject.Find("GAMECOMPLATE");
             clean_Debris = FindObjectOfType<Clean_Debris>();
             isDebrisFound = true;
 

@@ -67,6 +67,10 @@ public class ServerUDP : MonoBehaviour
     private GameObject minijuegos;
 
     bool sceneTrain = false;
+
+    bool game_complate = false;
+
+    private GameObject gamecomplate;
     void Start()
     {
         progressBar.act = 0;
@@ -92,6 +96,10 @@ public class ServerUDP : MonoBehaviour
 
     void Update()
     {
+        if(progressBar.act <= 100)
+        {
+            gamecomplate.SetActive(true);
+        }
         SendProgressToTheClient(progressBar.act);
         Debug.Log(progressBar.act.ToString());
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
@@ -101,6 +109,7 @@ public class ServerUDP : MonoBehaviour
                 sceneTrain = true;
                 minijuegos = GameObject.Find("-----Minigames-----");
                 int childCount = minijuegos.transform.childCount;
+                gamecomplate = GameObject.Find("GAMECOMPLATE");
                 if (childCount >= 3)
                 {
                     // Elige un índice aleatorio para el hijo que permanecerá activo
