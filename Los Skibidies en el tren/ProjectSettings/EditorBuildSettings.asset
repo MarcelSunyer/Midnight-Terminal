@@ -23,4 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TrainStation_Level.unity
     guid: 30fef9b0a18130441b3c40ba95ad23d2
+  - enabled: 1
+    path: Assets/Scenes/WinScene.unity
+    guid: f314a112351687049a5be6011b63dd6a
   m_configObjects: {}
