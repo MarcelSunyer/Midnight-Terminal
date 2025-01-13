@@ -15,11 +15,16 @@ public class Clean_Debris : MonoBehaviour, IInteractable
 
     public bool isDebrisDestroyed = false;
 
-    public GameObject task_complete;
-
     public Progress_bar progress_bar;
     private void Start()
     {
+        GameObject sliderBarObject = GameObject.Find("Slider_Bar");
+
+        if (sliderBarObject != null)
+        {
+            // Obtiene el componente Progress_bar del GameObject encontrado
+            progress_bar = sliderBarObject.GetComponent<Progress_bar>();
+        }
         // Guarda el tamaño original del objeto
         originalScale = transform.localScale;
 
