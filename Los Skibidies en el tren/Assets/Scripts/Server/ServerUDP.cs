@@ -60,6 +60,8 @@ public class ServerUDP : MonoBehaviour
 
     public Progress_bar progressBar;
 
+    private float _lastSentProgress = 0;
+
     int can_join = 0;
     void Start()
     {
@@ -86,6 +88,7 @@ public class ServerUDP : MonoBehaviour
 
     void Update()
     {
+        SendProgressToTheClient(progressBar.act);
         Debug.Log(progressBar.act.ToString());
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
@@ -140,6 +143,14 @@ public class ServerUDP : MonoBehaviour
         BroadcastServerPosition();
     }
 
+    void SendProgressToTheClient(float newValue)
+    {
+        if (_lastSentProgress != newValue)
+        {
+            _lastSentProgress = newValue; // Actualiza el valor almacenado
+            BroadcastProgressBarValueToClient();
+        }
+    }
     void CheckForHeartbeatTimeouts()
     {
         float currentTime = Time.time;
@@ -284,7 +295,18 @@ public class ServerUDP : MonoBehaviour
             RemoveClient(remoteClient); // Elimina el cliente desconectado
         }
     }
+    void BroadcastProgressBarValueToClient()
+    {
+        // Construye el mensaje para enviar a los demás clientes
+        string message = "UPDATE_PROGRESS:" + progressBar.act.ToString();
 
+        byte[] data = Encoding.ASCII.GetBytes(message);
+
+        foreach (var client in connectedClients)
+        {
+            socket.SendTo(data, client);
+        }
+    }
     void BroadcastProgressBarValue(string progressValue, EndPoint sender)
     {
         Debug.Log(progressValue);
@@ -292,10 +314,10 @@ public class ServerUDP : MonoBehaviour
         if (int.TryParse(progressValue, out int progressInt))
         {
             // Actualiza el valor de la barra de progreso en el servidor
-            progressBar.act += progressInt;
-
+            progressBar.act = progressInt;
+            _lastSentProgress = progressBar.act;
             // Construye el mensaje para enviar a los demás clientes
-            string message = "UPDATE_PROGRESS:" + progressBar.act;
+            string message = "UPDATE_PROGRESS:" + progressBar.act.ToString();
 
             byte[] data = Encoding.ASCII.GetBytes(message);
 
@@ -409,25 +431,7 @@ public class ServerUDP : MonoBehaviour
             }
         }
     }
-    //TODO: Analizar todo esto para enviar los datos a todos los clientes
-    //void BroadcastAllClientsData(EndPoint requestingClient)
-    //{
-    //    foreach (var clientEndpoint in clientPlayerInstances.Keys)
-    //    {
-    //        if (clientPlayerInstances[clientEndpoint] != null)
-    //        {
-    //            var clientObject = clientPlayerInstances[clientEndpoint];
-    //            Vector3 position = clientObject.transform.position;
-    //            Quaternion rotation = clientObject.transform.rotation;
-
-    //            Position positionData = new Position(position.x, position.y, position.z, rotation);
-    //            string serializedPosition = "POSCIENT:" + Position.Serialize(positionData);
-
-    //            byte[] data = Encoding.ASCII.GetBytes(serializedPosition);
-    //            socket.SendTo(data, requestingClient);
-    //        }
-    //    }
-    //}
+    
     void BroadcastMessage(string message, EndPoint sender)
     {
         byte[] data = Encoding.ASCII.GetBytes(message);

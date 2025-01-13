@@ -54,9 +54,10 @@ public class ClientUDP : MonoBehaviour
 
     public Progress_bar progressBar;
 
-    private float lastSentProgress = -1f; // Inicializa con un valor que no sea válido
+    private float lastSentProgress; // Inicializa con un valor que no sea válido
     void Start()
     {
+        
         if (serverRepresentationPrefab != null && serverInstance == null)
         {
             serverInstance = Instantiate(serverRepresentationPrefab, new Vector3(0, 0, 0), Quaternion.identity);
@@ -81,12 +82,14 @@ public class ClientUDP : MonoBehaviour
         DontDestroyOnLoad(serverInstance);
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
+        lastSentProgress = progressBar.act;
     }
 
     void Update()
     {
-        Debug.Log(progressBar.act);
-        
+        SendProgressToTheServer(progressBar.act);
+
+
         if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
             clean_Debris = FindObjectOfType<Clean_Debris>();
@@ -98,7 +101,7 @@ public class ClientUDP : MonoBehaviour
             DebrisDestroyed();
 
         }
-        SendProgressBarValue();
+
 
        
         if (shouldTeleport)
@@ -214,9 +217,9 @@ public class ClientUDP : MonoBehaviour
             }
             else if (receivedMessage.StartsWith("UPDATE_PROGRESS:"))
             {
-                string progressValue = receivedMessage.Substring(17); // Obtén el valor después de "UPDATE_PROGRESS:"
-                Debug.Log(progressValue);
-                mainThreadTasks.Enqueue(() => UpdateProgressBar(float.Parse(progressValue)));
+                string progressValue = receivedMessage.Substring(16); // Obtén el valor después de "UPDATE_PROGRESS:"
+                Debug.Log(progressValue.ToString());
+                mainThreadTasks.Enqueue(() => UpdateProgressBar(progressValue));
             }
             else if (receivedMessage.StartsWith("POSCIENTS:"))
             {
@@ -267,11 +270,15 @@ public class ClientUDP : MonoBehaviour
         destoryDebris = true;
     }
 
-    void UpdateProgressBar(float value)
+    void UpdateProgressBar(string value)
     {
-        if (progressBar != null) // Asegúrate de tener una referencia al script de la barra
+
+        if (int.TryParse(value, out int progressInt))
         {
-            progressBar.act = value;
+            if (progressBar != null) // Asegúrate de tener una referencia al script de la barra
+            {
+                progressBar.act = progressInt;
+            }
         }
     }
     void HandleNewClient(string clientInfo)
@@ -384,17 +391,21 @@ public class ClientUDP : MonoBehaviour
         isDebrisFound = true;
 
     }
-
+    void SendProgressToTheServer(float newValue)
+    {
+        if (lastSentProgress != newValue)
+        {
+            lastSentProgress = newValue; // Actualiza el valor almacenado
+            SendProgressBarValue();
+        }
+    }
     void SendProgressBarValue()
     {
         // Comprueba si el progreso cambió significativamente (tolerancia del 1%)
-        if (Mathf.Abs(progressBar.act - lastSentProgress) > 0.01f)
-        {
-            string message = "PROGRESS: " + progressBar.act;
-            SendMessageToServer(message);
-            lastSentProgress = progressBar.act; // Actualiza el último valor enviado
-            Debug.Log($"Progreso enviado al servidor: {progressBar.act}");
-        }
+
+        string message = "PROGRESS: " + progressBar.act;
+        SendMessageToServer(message);
+
     }
     public void SendMessageToChat(string text, Message.MessageType messageType)
     {
