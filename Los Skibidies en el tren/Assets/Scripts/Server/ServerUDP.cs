@@ -55,7 +55,7 @@ public class ServerUDP : MonoBehaviour
 
     private Clean_Debris clean_Debris;
     bool isSceneLoaded;
-    bool isTrainLoaded = false;
+    bool isDebrisFound = false;
     bool can_be_destroyed;
 
     public Progress_bar progressBar;
@@ -63,8 +63,6 @@ public class ServerUDP : MonoBehaviour
     private float _lastSentProgress = 0;
 
     int can_join = 0;
-
-    GameObject minijuegos;
     void Start()
     {
         progressBar.act = 0;
@@ -86,81 +84,63 @@ public class ServerUDP : MonoBehaviour
 
         interactionObject = GameObject.Find("Boton");
 
-        minijuegos = GameObject.Find("-----Minigames-----");
-
     }
 
     void Update()
     {
         SendProgressToTheClient(progressBar.act);
         Debug.Log(progressBar.act.ToString());
-        if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null && isTrainLoaded == false)
+        if (isSceneLoaded = SceneManager.GetSceneByName("TrainStation_Level").isLoaded && clean_Debris == null)
         {
-            minijuegos = GameObject.Find("-----Minigames-----");
             clean_Debris = FindObjectOfType<Clean_Debris>();
-            isTrainLoaded = true;
-            if (minijuegos != null)
-            {
-                // Asegúrate de que tiene al menos 3 hijos
-                int childCount = minijuegos.transform.childCount;
-                if (childCount >= 3)
-                {
-                    // Elige un índice aleatorio para el hijo que permanecerá activo
-                    int activeIndex = UnityEngine.Random.Range(0, childCount);
+            isDebrisFound = true;
 
-                    for (int i = 0; i < childCount; i++)
-                    {
-                        GameObject child = minijuegos.transform.GetChild(i).gameObject;
-                        // Desactiva todos los hijos excepto el seleccionado
-                        child.SetActive(i == activeIndex);
-                    }
-
-                    Debug.Log($"Hijo activo: {minijuegos.transform.GetChild(activeIndex).name}");
-                }
-
-            }
-            if (can_be_destroyed)
-            {
-                clean_Debris.DestroyDebris();
-                can_be_destroyed = false;
-            }
-            if (interactionObject != null)
-            {
-                interactionManager = interactionObject.GetComponent<StartGame_Button>();
-                if (interactionManager != null)
-                {
-                    interactionManager.OnSceneLoaded += HandleSceneLoaded;
-                }
-            }
-
-            CheckForHeartbeatTimeouts();
-            // Procesa todas las acciones encoladas para el hilo principal
-            while (mainThreadActions.Count > 0)
-            {
-                mainThreadActions.Dequeue()?.Invoke();
-            }
-
-            // Lógica existente...
-            while (messageQueue.TryDequeue(out string message))
-            {
-                SendMessageToChat(message, Message.MessageType.info);
-            }
-
-            if (Input.GetKeyDown(KeyCode.T))
-            {
-                general_chat.SetActive(!general_chat.activeSelf);
-            }
-
-            if (Input.GetKeyDown(KeyCode.Return) && !string.IsNullOrEmpty(chatbox.text))
-            {
-                string message = chatbox.text;
-                SendMessageToChat(player_name + ": " + message, Message.MessageType.playerMessage);
-                BroadcastMessage(player_name + ": " + message, null);
-                chatbox.text = "";
-            }
-
-            BroadcastServerPosition();
         }
+        if (clean_Debris == null && isDebrisFound)
+        {
+            DebrisDestroyed();
+        }
+        if(can_be_destroyed)
+        {
+            clean_Debris.DestroyDebris();
+            can_be_destroyed = false;
+        }
+        if (interactionObject != null)
+        {
+            interactionManager = interactionObject.GetComponent<StartGame_Button>();
+            if (interactionManager != null)
+            {
+                interactionManager.OnSceneLoaded += HandleSceneLoaded;
+            }
+        }
+
+        CheckForHeartbeatTimeouts();
+        // Procesa todas las acciones encoladas para el hilo principal
+        while (mainThreadActions.Count > 0)
+        {
+            mainThreadActions.Dequeue()?.Invoke();
+        }
+
+        // Lógica existente...
+        while (messageQueue.TryDequeue(out string message))
+        {
+            SendMessageToChat(message, Message.MessageType.info);
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            general_chat.SetActive(!general_chat.activeSelf);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Return) && !string.IsNullOrEmpty(chatbox.text))
+        {
+            string message = chatbox.text;
+            SendMessageToChat(player_name + ": " + message, Message.MessageType.playerMessage);
+            BroadcastMessage(player_name + ": " + message, null);
+            chatbox.text = "";
+        }
+
+        BroadcastServerPosition();
     }
 
     void SendProgressToTheClient(float newValue)
@@ -267,6 +247,7 @@ public class ServerUDP : MonoBehaviour
                 else if (receivedMessage.StartsWith("DEBRISDESTROYED:"))
                 {
                     can_be_destroyed = true;
+                    DebrisDestroyed();
                 }
                 else if (receivedMessage.StartsWith("POS:"))
                 {
@@ -353,7 +334,20 @@ public class ServerUDP : MonoBehaviour
         {
             Debug.LogWarning($"No se pudo convertir progressValue a int: {progressValue}");
         }
-    }     
+    }
+    void DebrisDestroyed()
+    {
+        string serializedData = "DEBRISDESTROYED:";
+        byte[] buffer = Encoding.ASCII.GetBytes(serializedData);
+
+        foreach (var client in connectedClients)
+        {
+            socket.SendTo(buffer, client);
+        }
+        isDebrisFound = true;
+
+    }
+     
     void BroadcastServerPosition()
     {
         if (dynamicServerObject == null)
